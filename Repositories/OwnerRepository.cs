@@ -6,7 +6,7 @@ namespace testNetMVC.Repositories
 {
     public class OwnerRepository
     {
-        private string connecString = "Server=localhost;User=root;Password=password;Database=dotnettest1;SslMode=none";
+        private readonly string _connecString = "Server=localhost;User=root;Password=password;Database=dotnettest1;SslMode=none";
 
         private readonly ILogger<OwnerRepository>? _logger;
         public OwnerRepository(ILogger logger)
@@ -22,10 +22,11 @@ namespace testNetMVC.Repositories
         {
             Owner? owner = null;
 
-            Helper.executeSafe("get one Owner", () =>
+            Console.WriteLine("Retriving one owner");
+
+            try
             {
-                // string connecString = "Server=localhost;User=root;Password=password;Database=dotnettest1;SslMode=none";
-                using (MySqlConnection connection = new MySqlConnection(connecString))
+                using (MySqlConnection connection = new MySqlConnection(_connecString))
                 {
                     string[] columns = { "id", "dni", "email", "first_name", "last_name", "phone" };
                     string sql = @"SELECT " + string.Join(", ", columns) + " FROM owners WHERE id=@id;";
@@ -57,18 +58,24 @@ namespace testNetMVC.Repositories
                         connection.Close();
                     }
                 }
-            });
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("Error retriving owner " + ex);
+
+            }
 
             return owner;
         }
 
-        public List<Owner> getAll()
+        public List<Owner>? getAll()
         {
-            List<Owner> owners = new List<Owner> { };
+            List<Owner>? owners = new List<Owner> { };
+            Console.WriteLine("Retriving all owners");
 
-            Helper.executeSafe("get all Owners", () =>
+            try
             {
-                using (MySqlConnection connection = new MySqlConnection(connecString))
+                using (MySqlConnection connection = new MySqlConnection(_connecString))
                 {
                     string columns = "id, dni, email, first_name, last_name, phone";
                     string sql = @"SELECT " + columns + " FROM owners;";
@@ -96,7 +103,12 @@ namespace testNetMVC.Repositories
                         connection.Close();
                     }
                 }
-            });
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("Error retriving all owners " + ex);
+                return null;
+            }
 
             return owners;
         }
@@ -105,40 +117,34 @@ namespace testNetMVC.Repositories
         {
             int id = -1;
 
-            Helper.executeSafe("create Owner", () =>
+            try
             {
-                using (MySqlConnection connection = new MySqlConnection(connecString))
+                Console.WriteLine("Creating owner");
+
+                using (MySqlConnection connection = new MySqlConnection(_connecString))
                 {
 
-                    // List<string> defaultColumns = new List<string> { "dni", "email", "first_name", "last_name", "phone" };
-                    /* string[] columns = {};
-                    for (int i = 0; i < columns.Count(); i++)
-                    {
-                        if(owner.GetType().GetProperty(columns[i]) != null){
-                            columns.Append(columns[i]);
-                        }
-                    } */
-                    // List<string> values = (List<string>)defaultColumns.Select(col => "@" + col);
-                    // string sql = @"INSERT INTO Owners(" + string.Join(", ", defaultColumns) + ") VALUES(" + string.Join(", ", values) + "); SELECT LAST_INSERT_ID()";
-                    string sql = @"INSERT INTO Owners(dni, first_name, last_name, phone, email) VALUES (@dni, @first_name, @last_name, @phone, @email); SELECT LAST_INSERT_ID()";
+                    string sql = @"INSERT INTO Owners(dni, first_name, last_name, email" + owner.Phone != string.Empty ? ", phone)" : ")"
+                    + "  VALUES (@dni, @first_name, @last_name, @email" + owner.Phone != string.Empty ? ", @phone)" : ")" + "; SELECT LAST_INSERT_ID()";
                     using (MySqlCommand command = new MySqlCommand(sql, connection))
                     {
                         command.CommandType = System.Data.CommandType.Text;
                         command.Parameters.AddWithValue("@dni", owner.Dni);
                         command.Parameters.AddWithValue("@first_name", owner.First_name);
                         command.Parameters.AddWithValue("@last_name", owner.Last_name);
-                        command.Parameters.AddWithValue("@phone", owner.Phone);
                         command.Parameters.AddWithValue("@email", owner.Email);
-                        /* for (int i = 0; i < values.Count(); i++)
-                        {
-                            command.Parameters.AddWithValue(values[i], owner.GetType().GetProperty(Thread.CurrentThread.CurrentCulture.TextInfo.ToTitleCase(defaultColumns[i])).GetValue(owner, null));
-                        } */
+                        if (owner.Phone != string.Empty)
+                            command.Parameters.AddWithValue("@phone", owner.Phone);
                         connection.Open();
                         id = Convert.ToInt32(command.ExecuteScalar());
                         connection.Close();
                     }
                 }
-            });
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("Error creating the owner " + ex);
+            }
 
             return id;
         }
@@ -146,10 +152,10 @@ namespace testNetMVC.Repositories
         public int delete(int id)
         {
             int result = -1;
-
-            Helper.executeSafe("delete Owner", () =>
+            Console.WriteLine("Deleting owner");
+            try
             {
-                using (MySqlConnection connection = new MySqlConnection(connecString))
+                using (MySqlConnection connection = new MySqlConnection(_connecString))
                 {
                     string sql = @"DELETE FROM Owners WHERE id=@id";
                     using (MySqlCommand command = new MySqlCommand(sql, connection))
@@ -161,7 +167,11 @@ namespace testNetMVC.Repositories
                         connection.Close();
                     }
                 }
-            });
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("Error executing delete owner " + ex);
+            }
 
             return result;
         }
@@ -170,24 +180,30 @@ namespace testNetMVC.Repositories
         public int update(Owner owner)
         {
             int result = -1;
-
-            Helper.executeSafe("update Owner", () =>
+            Console.WriteLine("Updating owner");
+            try
             {
-                using (MySqlConnection connection = new MySqlConnection(connecString))
+                using (MySqlConnection connection = new MySqlConnection(_connecString))
                 {
-                    string[] columns = { "id", "dni", "email", "first_name", "last_name", "phone" };
-                    string values = string.Join(", ", columns.Select(col => col + "=" + "@" + col));
-                    string sql = @"UPDATE Owners SET " + values + " WHERE id=@id; SELECT LAST_INSERT_ID()";
+                    string sql = @"UPDATE Owners SET dni=@dni, first_name=@first_name, last_name=@last_name, email=@email, phone=@phone WHERE id=@id; SELECT LAST_INSERT_ID()";
                     using (MySqlCommand command = new MySqlCommand(sql, connection))
                     {
                         command.CommandType = System.Data.CommandType.Text;
-                        command.Parameters.AddWithValue("@id", owner.Id);
+                        command.Parameters.AddWithValue("@dni", owner.Dni);
+                        command.Parameters.AddWithValue("@first_name", owner.First_name);
+                        command.Parameters.AddWithValue("@last_name", owner.Last_name);
+                        command.Parameters.AddWithValue("@email", owner.Email);
+                        command.Parameters.AddWithValue("@phone", owner.Phone);
                         connection.Open();
                         result = (int)command.ExecuteScalar();
                         connection.Close();
                     }
                 }
-            });
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("Error updating owner" + ex);
+            }
 
             return result;
         }
