@@ -1,0 +1,272 @@
+@using Microsoft.AspNetCore.Antiforgery
+@model List<Owner>
+@inject IAntiforgery antiforgery
+@{
+    ViewData["Title"] = "Propietarios";
+
+    var token = antiforgery.GetAndStoreTokens(Context).RequestToken;
+}
+<section class="section">
+    <ul class="owners-list list">
+        <li class="owner-list-header list-header">
+            <div class="list-colum">
+                <span id="n-intern-header" class="n-intern-column">N° interno</span>
+                <span class="dni-column">Dni</span>
+                <span>Nombre completo</span>
+            </div>
+            <div class="action-buttons list-actions-column">
+                @* <span>Acciones</span> *@
+                <button onclick="createForm()" class="create-btn">+nuevo</button>
+            </div>
+        </li>
+        @{
+            foreach (var owner in Model)
+            {
+                <li class="owner-row list-row">
+                    <div class="list-colum">
+                        <span class="n-intern-column">#@owner.Id</span>
+                        <span class="dni-column">@owner.Dni</span>
+                        <span>@owner.ToString()</span>
+                    </div>
+                    <div class="action-buttons list-actions-column">
+                        <button class="list-action-button primary-bg" onclick="updateForm('@owner.Id')">Actualizar</button>
+                        <button class="list-action-button danger-bg" onclick="confirmDelete()">Eliminar</button>
+                    </div>
+                </li>
+            }
+        }
+    </ul>
+</section>
+
+<section class="actions-section actions-section-hide section">
+    <form onsubmit="handleSubmit(event)" class="form hidden">
+        <h2 class="form-title">title</h2>
+        <div class="form-row">
+            <label class="form-label" for="">Nombre<sup>*</sup></label>
+            <input onchange="handleChange(event)" onclick="addErrorWatcher(event)" autofocus id="name-input" name="first_name" class="form-input" type="text" required>
+            <span class="input-error">Campo obligatorio</span>
+        </div>
+        <div class="form-row">
+            <label class="form-label" for="">Apellido<sup>*</sup></label>
+            <input onchange="handleChange(event)" onclick="addErrorWatcher(event)" id="last-name-input" name="last_name" class="form-input" type="text" required>
+            <span class="input-error">Campo obligatorio</span>
+        </div> 
+        <div class="form-row">
+            <label class="form-label" for="">DNI<sup>*</sup></label>
+            <input onchange="handleChange(event)" onclick="addErrorWatcher(event)" id="dni-input" name="dni" class="form-input" type="number" min="1000000" required>
+            <span class="input-error">Mínimo 7 dígitos, sólo números</span>
+        </div>
+        <div class="form-row">
+            <label class="form-label" for="">email<sup>*</sup></label>
+            <input onchange="handleChange(event)" onclick="addErrorWatcher(event)" id="email-input" name="email" class="form-input" type="email" required>
+            <span class="input-error">No es un email válido</span>
+        </div>
+        <div class="form-row">
+            <label class="form-label" for="">teléfono</label>
+            <input onchange="handleChange(event)" id="phone-input" name="phone" class="form-input" type="text">
+        </div>
+        <div class="form-buttons">
+            <button class="confirm-btn disabled-btn" id="send-button" disabled></button>
+            <button class="cancel-btn" onclick="cancelAction()">Cancelar</button>
+        </div>
+    </form>
+    
+    <div class="confirm-delete confirm-dialog hidden">
+        <span>Está seguro que desea eliminar?</span>
+        <div class="buttons">
+            <button class="delete-btn">Eliminar</button>
+            <button class="cancel-btn" onclick="cancelAction()">Cancelar</button>
+        </div>
+    </div>
+
+    <div class="spinner"></div>
+
+    <div class="error-toast hidden">
+        <span class="error-type"></span>
+        <span class="error-msg"></span>
+    </div>
+    
+</section>
+
+<script>
+
+    document.body.addEventListener('keydown', (e)=>{
+        if(e.key === "Escape") {
+            hideActions();
+        }
+    });
+
+    let last_action;
+
+    const default_body = {
+        first_name: null,
+        last_name: null,
+        email: null,
+        phone: null,
+        dni: null
+    };
+
+    let body_data = default_body;
+
+
+    function handleSubmit(e){
+        e.preventDefault();
+    }
+
+    function handleChange(event){
+        console.log("manejand")
+        const key = event.target.name;
+        body_data[key] = event.target.value;
+        if( body_data.first_name.length > 3 
+            && body_data.last_name.length > 3
+            && body_data.dni > 99999
+            && body_data.email.length > 3
+        ){
+            document.querySelector("#send-button").removeAttribute("disabled");
+            document.querySelector("#send-button").classList.remove("disabled-btn");
+        }else{
+            document.querySelector("#send-button").setAttribute("disabled", "");
+            document.querySelector("#send-button").classList.add("disabled-btn");
+        }
+    }
+
+    function clearForm(){
+        document.querySelector("#name-input").value='';
+        document.querySelector("#last-name-input").value='';
+        document.querySelector("#dni-input").value='';
+        document.querySelector("#email-input").value='';
+        document.querySelector("#phone-input").value='';
+        document.querySelector(".error-toast").classList.add("hidden");
+        let body_data = default_body;
+        document.querySelector("#send-button").removeEventListener("click",()=>{sendCreateReq()});
+    }
+    
+    function showActions(){
+        document.querySelector(".actions-section").classList.remove("actions-section-hide")
+    }
+    
+    function hideActions(){
+        document.querySelector(".actions-section").classList.add("actions-section-hide")
+        document.querySelector(".form").classList.add("hidden");
+        document.querySelector(".confirm-delete").classList.add("hidden");
+        document.querySelector(".spinner").classList.remove("hidden");
+        document.querySelector(".error-toast").classList.add("hidden");
+    }
+
+    function cancelAction(){
+        document.querySelector(".actions-section").classList.add("actions-section-hide")
+        document.querySelector(".form").classList.add("hidden");
+        document.querySelector(".confirm-delete").classList.add("hidden");
+        document.querySelector(".spinner").classList.remove("hidden");
+        clearForm();
+        removeErrorWatcher();
+    }
+
+    function confirmDelete(){
+        document.querySelector(".spinner").classList.add("hidden");
+        document.querySelector(".confirm-delete").classList.remove("hidden");
+        showActions();
+    }
+    
+    function createForm(){
+        showActions();
+        if(last_action == 'update') clearForm();
+        last_action = 'create';
+        document.querySelector(".form-title").innerHTML = "Nuevo inquilino";
+        document.querySelector("#send-button").innerHTML = "Agregar";
+        document.querySelector("#send-button").addEventListener("click", ()=>{sendCreateReq()});
+        document.querySelector(".spinner").classList.add("hidden");
+        document.querySelector(".form").classList.remove("hidden");
+    }
+    
+    function updateForm(owner_id){
+        
+        last_action = 'update';
+        showActions();
+
+        fetch(`https://localhost:7164/Owner/get?id=${parseInt(owner_id)}`, {
+            headers:{
+                "RequestVerificationToken": "@token"
+            }
+        }).then(res=>res.json()).then(data=>{
+            setCurrentOwnerData(data.value)
+            document.querySelector(".spinner").classList.add("hidden");
+            document.querySelector(".form").classList.remove("hidden");
+        }).catch(e=>{
+            console.error(e);
+        })
+        document.querySelector(".form-title").innerHTML = "Actualizar datos de inquilino";
+        document.querySelector("#send-button").innerHTML = "Actualizar";
+    }
+
+    function setCurrentOwnerData(owner){
+        document.querySelector("#name-input").value=owner.first_name;
+        document.querySelector("#last-name-input").value=owner.last_name;
+        document.querySelector("#dni-input").value=owner.dni;
+        document.querySelector("#email-input").value=owner.email;
+        if(owner.phone)
+            document.querySelector("#phone-input").value=owner.phone;
+    }
+
+    function sendCreateReq(){
+
+        const first_name = document.querySelector("#name-input").value;
+        const last_name = document.querySelector("#last-name-input").value;
+        const dni = document.querySelector("#dni-input").value;
+        const email = document.querySelector("#email-input").value;
+        const phone = document.querySelector("#phone-input").value;
+
+        if(first_name.length < 3)
+            return showError('Datos inválidos', 'No completó correctamente el campo "Nombre"');
+
+        const body = {
+            "First_name": "Juanito",
+            "Last_name": "Perez",
+            "Dni": "456",
+            "Email": "456",
+            "Phone": "654"
+        }
+    }
+
+    function addErrorWatcher(event){
+        event.target.classList.add("error-watcher");
+    }
+    
+    function removeErrorWatcher(){
+        document.querySelectorAll(".error-watcher").forEach(input=>{
+            input.classList.remove("error-watcher");
+        })
+    }
+    
+    function showError(type, msg){
+        console.log("mostrando error")
+        document.querySelector(".error-toast").classList.remove("hidden");
+        document.querySelector(".error-type").innerHTML = type;
+        document.querySelector(".error-msg").innerHTML = msg;
+        setTimeout(()=>{
+            document.querySelector(".error-toast").classList.add("hidden");
+            document.querySelector(".error-type").innerHTML = '';
+            document.querySelector(".error-msg").innerHTML = '';
+        }, 2 * 1000)
+    }
+
+    @* fetch("https://localhost:7164/Owner/New", {
+        method: "POST",
+        body: JSON.stringify(
+            {
+                "First_name": "Juanito",
+                "Last_name": "Perez",
+                "Dni": "456",
+                "Phone": "654"
+            }
+        ),
+        headers:{
+            "Content-Type": "application/json",
+            "RequestVerificationToken": "@token"
+        },
+    }).then(res=>res.json()).then(data=>{
+        console.log(data);
+    }).catch(e=>{
+        console.error(e);
+    }) *@
+</script>

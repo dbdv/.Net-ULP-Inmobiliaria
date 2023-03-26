@@ -1,0 +1,31 @@
+.section {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  font-weight: 300;
+}
+.home-section {
+  margin-top: 250px;
+}
+
+.home-title {
+  font-size: 3rem;
+  color: #5e5e5e;
+  font-weight: 400;
+}
+
+.home-title > span {
+  color: #023c3c;
+}
+
+.home-subtitle {
+  font-size: 2rem;
+  font-weight: 300;
+  color: #5e5e5e;
+}
+
+.home-subtitle > span {
+  text-transform: uppercase;
+}

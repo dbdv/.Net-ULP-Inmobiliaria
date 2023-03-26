@@ -1,0 +1,79 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Inmobiliaria Bustillos | @ViewData["Title"]</title>
+    @* <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" /> *@
+    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/testNetMVC.styles.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/css/header.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/css/home.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/css/lists.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/css/forms.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/css/spinner.css" asp-append-version="true" />
+    <script src="~/js/header.js" defer asp-append-version="true" ></script>
+</head>
+<body>
+    <header>
+        <nav class="my-navbar">
+            <div class="logo-div">
+                <a asp-area="" asp-controller="Home" asp-action="Index" tabindex="1">
+                    <div>
+                        <span>Inmobiliaria</span>
+                        <span>bustillos</span>
+                    </div>
+                </a>
+            </div>
+            <div  class="menues-div">
+                <div class="menu-point-div" tabindex="2">
+                    <span class="menu-label">Propietarios</span>
+                    <ul class="menu-ul">
+                        <li class="menu-item menu-indicator" tabindex="3">
+                            <a asp-action="Index" asp-controller="Owner">
+                                Ver todos
+                            </a>
+                        </li>
+                        <li class="menu-item" tabindex="4">Menu item 2</li>
+                        <li class="menu-item" tabindex="5">Menu item 3</li>
+                    </ul>
+                </div>
+                <div class="menu-point-div" tabindex="6">
+                    <span class="menu-label">Inquilinos</span>
+                    <ul class="menu-ul">
+                        <li class="menu-item" tabindex="7">Menu item 1</li>
+                        <li class="menu-item" tabindex="8">Menu item 2</li>
+                        <li class="menu-item" tabindex="10">Menu item 3</li>
+                    </ul>
+                </div>
+                <div class="menu-point-div" tabindex="11">
+                    <span class="menu-label">Contratos</span>
+                    <ul class="menu-ul">
+                        <li class="menu-item" tabindex="12">Menu item 1</li>
+                        <li class="menu-item" tabindex="13">Menu item 2</li>
+                        <li class="menu-item" tabindex="14">Menu item 3</li>
+                    </ul>
+                </div>
+                <div class="menu-point-div" tabindex="15">
+                    <span class="menu-label">Inmuebles</span>
+                    <ul class="menu-ul">
+                        <li class="menu-item" tabindex="16">Menu item 1</li>
+                        <li class="menu-item" tabindex="17">Menu item 2</li>
+                        <li class="menu-item" tabindex="18">Menu item 3</li>
+                    </ul>
+                </div>
+            </div>
+        </nav>
+    </header>
+    <div class="container">
+        <main role="main" class="main">
+            @RenderBody()
+        </main>
+    </div>
+
+    <script src="~/lib/jquery/dist/jquery.min.js"></script>
+    <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="~/js/site.js" asp-append-version="true"></script>
+    @await RenderSectionAsync("Scripts", required: false)
+</body>
+</html>

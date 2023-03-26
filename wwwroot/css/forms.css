@@ -1,0 +1,103 @@
+.form {
+  width: 600px;
+  background: white;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: start;
+  padding: 1rem;
+  gap: 2rem;
+  border-radius: 10px;
+  border: 1px solid darkslategrey;
+}
+
+.form-title {
+  width: 100%;
+  text-align: center;
+  text-transform: uppercase;
+  font-size: 2rem;
+}
+
+.form-row {
+  position: relative;
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.form-label {
+  width: 100px;
+  text-transform: capitalize;
+}
+
+.input-error {
+  position: absolute;
+  bottom: -20px;
+  left: 190px;
+  font-size: 0.85rem;
+  color: #ea4d4d;
+  display: none;
+  text-transform: uppercase;
+  padding-left: 1rem;
+}
+
+.form-input {
+  padding: 0.3rem 1rem;
+}
+
+.error-watcher:not(:focus):invalid ~ .input-error {
+  display: block;
+}
+
+.error-watcher:not(:focus):invalid {
+  border-color: #ea4d4d;
+}
+
+input[type="number"] {
+  -moz-appearance: textfield;
+}
+.form-input::-webkit-outer-spin-button,
+.form-input::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+.form-buttons {
+  display: flex;
+  width: 100%;
+  justify-content: center;
+  gap: 3rem;
+}
+
+.form-buttons > button {
+  padding: 0.1rem 0.4rem;
+  border: none;
+  font-size: 1.2rem;
+  border: 1px solid transparent;
+}
+
+.form-buttons > button:hover {
+  cursor: pointer;
+}
+
+.form-buttons > button:hover,
+.form-buttons > button:focus-within {
+  scale: 1.1;
+}
+
+.form-buttons > .confirm-btn {
+  background: #8fbc8f;
+  border-color: #67a167;
+}
+
+.form-buttons > .cancel-btn {
+  background: #afd3f0;
+  border-color: #89c0ee;
+}
+
+.form-buttons > .disabled-btn:hover,
+.form-buttons > .disabled-btn:focus-within {
+  scale: none;
+  cursor: auto;
+}
