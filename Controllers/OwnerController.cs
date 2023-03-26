@@ -13,37 +13,37 @@ public class OwnerController : Controller
     public OwnerController(ILogger<OwnerController> logger)
     {
         _logger = logger;
-        // ownerRepository = new OwnerRepository(logger);
         ownerRepository = new OwnerRepository();
     }
 
     public IActionResult Index()
     {
 
-        List<Owner> owners = ownerRepository.getAll();
+        List<Owner>? owners = ownerRepository.getAll();
 
-        // if (owner == null) return View("loginError");
-        Console.WriteLine(owners.Count());
+        if (owners is null) return View("loginError");
 
         return View(owners);
     }
 
     [HttpGet]
-    [ValidateAntiForgeryToken]
+    // [ValidateAntiForgeryToken]
     public IResult All()
     {
+        Console.WriteLine("aca");
 
-        List<Owner> owners = ownerRepository.getAll();
+        List<Owner>? owners = ownerRepository.getAll();
 
-        return Results.Ok(owners);
+        if (owners is null) return Results.Problem("No se pudo recuperar los propietarios.", statusCode: 501);
+        return Results.Json(owners, statusCode: 200);
     }
 
     [HttpGet]
-    [ValidateAntiForgeryToken]
+    // [ValidateAntiForgeryToken]
     public IResult One()
     {
 
-        List<Owner> owners = ownerRepository.getAll();
+        List<Owner>? owners = ownerRepository.getAll();
 
         return Results.Ok(owners);
     }
@@ -52,27 +52,44 @@ public class OwnerController : Controller
     [ValidateAntiForgeryToken]
     public IResult New([FromBody] Owner body)
     {
-        Console.WriteLine(body);
-        Boolean created = Convert.ToBoolean(ownerRepository.create(body));
 
+        if (body.Email == string.Empty || body.First_name == string.Empty || body.Last_name == string.Empty || body.Dni == string.Empty)
+            return Results.Problem("Datos incorrectos.", statusCode: 400);
 
-        if (!created) Results.Problem("No se pudo crear el usuario", statusCode: 500);
+        int created = ownerRepository.create(body);
 
-        return Results.Ok("Creado correctamente");
+        if (created == -1) return Results.Problem("No se pudo crear el propietario", statusCode: 501);
+
+        return Results.Ok("Agregado correctamente");
+    }
+
+    [HttpPost]
+    // [ValidateAntiForgeryToken]
+    public IResult Update([FromBody] Owner body)
+    {
+
+        if (body.Email == string.Empty || body.First_name == string.Empty || body.Last_name == string.Empty || body.Dni == string.Empty)
+            return Results.Problem("Datos incorrectos.", statusCode: 400);
+
+        int updated = ownerRepository.create(body);
+
+        if (updated == -1) return Results.Problem("No se pudo actualizar la información del propietario", statusCode: 501);
+
+        return Results.Ok("Datos actualizados correctamente");
     }
 
     [HttpGet]
     [Route("Owner/get")]
-    [ValidateAntiForgeryToken]
+    // [ValidateAntiForgeryToken]
     public IResult New([FromQuery] int id)
     {
-        Console.WriteLine(id);
+        if (id < 1)
+            return Results.Problem("ID inválido.", statusCode: 400);
         var owner = ownerRepository.get(id);
 
+        if (owner is null) return Results.Problem("No se pudo acceder a los datos del usuario", statusCode: 500);
 
-        if (owner == null) Results.Problem("No se pudo acceder a los datos del usuario", statusCode: 500);
-
-        return Results.Ok(owner);
+        return Results.Json(owner, statusCode: 200);
     }
 
     [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
