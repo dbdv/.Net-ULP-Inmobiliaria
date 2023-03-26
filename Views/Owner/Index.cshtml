@@ -30,7 +30,7 @@
                     </div>
                     <div class="action-buttons list-actions-column">
                         <button class="list-action-button primary-bg" onclick="updateForm('@owner.Id')">Actualizar</button>
-                        <button class="list-action-button danger-bg" onclick="confirmDelete()">Eliminar</button>
+                        <button class="list-action-button danger-bg" onclick="confirmDelete('@owner.Id')">Eliminar</button>
                     </div>
                 </li>
             }
@@ -43,22 +43,22 @@
         <h2 class="form-title">title</h2>
         <div class="form-row">
             <label class="form-label" for="">Nombre<sup>*</sup></label>
-            <input onchange="handleChange(event)" onclick="addErrorWatcher(event)" autofocus id="name-input" name="first_name" class="form-input" type="text" required>
+            <input onchange="handleChange(event)" onclick="addErrorWatcher(event)" onfocus="addErrorWatcher(event)" autofocus id="name-input" name="first_name" class="form-input" type="text" required>
             <span class="input-error">Campo obligatorio</span>
         </div>
         <div class="form-row">
             <label class="form-label" for="">Apellido<sup>*</sup></label>
-            <input onchange="handleChange(event)" onclick="addErrorWatcher(event)" id="last-name-input" name="last_name" class="form-input" type="text" required>
+            <input onchange="handleChange(event)" onclick="addErrorWatcher(event)" onfocus="addErrorWatcher(event)" id="last-name-input" name="last_name" class="form-input" type="text" required>
             <span class="input-error">Campo obligatorio</span>
         </div> 
         <div class="form-row">
             <label class="form-label" for="">DNI<sup>*</sup></label>
-            <input onchange="handleChange(event)" onclick="addErrorWatcher(event)" id="dni-input" name="dni" class="form-input" type="number" min="1000000" required>
+            <input onchange="handleChange(event)" onclick="addErrorWatcher(event)" onfocus="addErrorWatcher(event)" id="dni-input" name="dni" class="form-input" type="number" min="1000000" required>
             <span class="input-error">Mínimo 7 dígitos, sólo números</span>
         </div>
         <div class="form-row">
             <label class="form-label" for="">email<sup>*</sup></label>
-            <input onchange="handleChange(event)" onclick="addErrorWatcher(event)" id="email-input" name="email" class="form-input" type="email" required>
+            <input onchange="handleChange(event)" onclick="addErrorWatcher(event)" onfocus="addErrorWatcher(event)" id="email-input" name="email" class="form-input" type="email" required>
             <span class="input-error">No es un email válido</span>
         </div>
         <div class="form-row">
@@ -81,9 +81,9 @@
 
     <div class="spinner"></div>
 
-    <div class="error-toast hidden">
-        <span class="error-type"></span>
-        <span class="error-msg"></span>
+    <div class="toast error-toast hidden">
+        <span class="toast-title error-type"></span>
+        <span class="toast-info error-msg"></span>
     </div>
     
 </section>
@@ -96,7 +96,10 @@
         }
     });
 
+    const base_url = "https://localhost:7164/Owner/";
+
     let last_action;
+    let delete_id = null;
 
     const default_body = {
         first_name: null,
@@ -114,17 +117,19 @@
     }
 
     function handleChange(event){
-        console.log("manejand")
         const key = event.target.name;
-        body_data[key] = event.target.value;
-        if( body_data.first_name.length > 3 
-            && body_data.last_name.length > 3
-            && body_data.dni > 99999
-            && body_data.email.length > 3
+        body_data[key] = event.target.value.trim();
+        console.log(body_data)
+        if( body_data.first_name?.length > 3 
+            && body_data.last_name?.length > 3
+            && parseInt(body_data?.dni) > 99999
+            && body_data.email?.length > 3
         ){
-            document.querySelector("#send-button").removeAttribute("disabled");
+        console.log("datos ok")
+            document.querySelector("#send-button").removeAttribute("disabled"); 
             document.querySelector("#send-button").classList.remove("disabled-btn");
         }else{
+        console.log("datos ok'nt")
             document.querySelector("#send-button").setAttribute("disabled", "");
             document.querySelector("#send-button").classList.add("disabled-btn");
         }
@@ -137,7 +142,7 @@
         document.querySelector("#email-input").value='';
         document.querySelector("#phone-input").value='';
         document.querySelector(".error-toast").classList.add("hidden");
-        let body_data = default_body;
+        body_data = default_body;
         document.querySelector("#send-button").removeEventListener("click",()=>{sendCreateReq()});
     }
     
@@ -151,6 +156,7 @@
         document.querySelector(".confirm-delete").classList.add("hidden");
         document.querySelector(".spinner").classList.remove("hidden");
         document.querySelector(".error-toast").classList.add("hidden");
+        delete_id = null;
     }
 
     function cancelAction(){
@@ -160,12 +166,37 @@
         document.querySelector(".spinner").classList.remove("hidden");
         clearForm();
         removeErrorWatcher();
+        delete_id = null;
     }
 
-    function confirmDelete(){
+    function confirmDelete(id){
         document.querySelector(".spinner").classList.add("hidden");
         document.querySelector(".confirm-delete").classList.remove("hidden");
+        document.querySelector(".delete-btn").addEventListener("click", ()=>{deleteOwner(id)})
         showActions();
+    }
+
+    function deleteOwner(id){
+        document.querySelector(".confirm-delete").classList.add("hidden");
+        document.querySelector(".spinner").classList.remove("hidden");
+        
+        if(id !== null){
+            fetch(`${base_url}delete?id=${id}`, {
+                method: "DELETE",
+                headers:{
+                    "Content-Type": "application/json",
+                    "RequestVerificationToken": "@token"
+                },
+            }).then(res=>{
+                if(res.status != 200)
+                    showError("Error", "No se pudo eliminar el propietario, intenta nuevamente.");
+                if(res.redirected)
+                    window.location.href =res.url;
+                
+            }).catch(e=>{
+                console.error(e);
+            })
+        }
     }
     
     function createForm(){
@@ -189,7 +220,8 @@
                 "RequestVerificationToken": "@token"
             }
         }).then(res=>res.json()).then(data=>{
-            setCurrentOwnerData(data.value)
+            console.log(data);
+            setCurrentOwnerData(data)
             document.querySelector(".spinner").classList.add("hidden");
             document.querySelector(".form").classList.remove("hidden");
         }).catch(e=>{
@@ -200,16 +232,19 @@
     }
 
     function setCurrentOwnerData(owner){
+        body_data = {...owner};
         document.querySelector("#name-input").value=owner.first_name;
         document.querySelector("#last-name-input").value=owner.last_name;
         document.querySelector("#dni-input").value=owner.dni;
         document.querySelector("#email-input").value=owner.email;
         if(owner.phone)
             document.querySelector("#phone-input").value=owner.phone;
+        document.querySelector("#send-button").addEventListener("click", ()=>{sendUpdateReq(owner.id)});
     }
 
     function sendCreateReq(){
 
+        const emailReg = new RegExp('^(([^<>()[\]\.,;:\s@@\"]+(\.[^<>()[\]\.,;:\s@@\"]+)*)|(\".+\"))@@(([^<>()[\]\.,;:\s@@\"]+\.)+[^<>()[\]\.,;:\s@@\"]{2,})$', "i");
         const first_name = document.querySelector("#name-input").value;
         const last_name = document.querySelector("#last-name-input").value;
         const dni = document.querySelector("#dni-input").value;
@@ -218,14 +253,67 @@
 
         if(first_name.length < 3)
             return showError('Datos inválidos', 'No completó correctamente el campo "Nombre"');
+        if(last_name.length < 3)
+            return showError('Datos inválidos', 'No completó correctamente el campo "Apellido"');
+        if(dni < 1000000)
+            return showError('Datos inválidos', 'No completó correctamente el campo "DNI"');
+        if(@* !emailReg.test(email) *@ email.length < 10)
+            return showError('Datos inválidos', 'No completó correctamente el campo "Email"');
 
         const body = {
-            "First_name": "Juanito",
-            "Last_name": "Perez",
-            "Dni": "456",
-            "Email": "456",
-            "Phone": "654"
+            "First_name": first_name,
+            "Last_name": last_name,
+            "Dni": dni,
+            "Email": email,
+            "Phone": phone
         }
+
+        document.querySelector(".form").classList.add("hidden");
+        document.querySelector(".spinner").classList.remove("hidden");
+
+        fetch(`${base_url}new`, {
+                method: "POST",
+                headers:{
+                    "Content-Type": "application/json",
+                    "RequestVerificationToken": "@token"
+                },
+                body: JSON.stringify(body),
+            }).then(res=>{
+                if(res.status != 200)
+                    showError("Error", "No se pudo crear el propietario, intenta nuevamente.", ()=>{
+                        document.querySelector(".form").classList.remove("hidden");
+                    });
+                if(res.redirected)
+                    window.location.href =res.url;
+                
+            }).catch(e=>{
+                console.error(e);
+        })
+    }
+    
+    function sendUpdateReq(){
+
+        document.querySelector(".form").classList.add("hidden");
+        document.querySelector(".spinner").classList.remove("hidden");
+
+        fetch(`${base_url}update`, {
+                method: "PUT",
+                headers:{
+                    "Content-Type": "application/json",
+                    "RequestVerificationToken": "@token"
+                },
+                body: JSON.stringify(body_data),
+            }).then(res=>{
+                if(res.status != 200)
+                    showError("Error", "No se pudo crear el propietario, intenta nuevamente.", ()=>{
+                        document.querySelector(".form").classList.remove("hidden");
+                    });
+                if(res.redirected)
+                    window.location.href =res.url;
+                
+            }).catch(e=>{
+                console.error(e);
+        })
     }
 
     function addErrorWatcher(event){
@@ -238,35 +326,25 @@
         })
     }
     
-    function showError(type, msg){
-        console.log("mostrando error")
+    function removeDeleteListener(){
+        document.querySelector(".delete-btn").removeEventListener("click", deleteOwner)
+    }
+    
+    function showError(type, msg, effect = null){
+        document.querySelector(".spinner").classList.add("hidden");
         document.querySelector(".error-toast").classList.remove("hidden");
         document.querySelector(".error-type").innerHTML = type;
         document.querySelector(".error-msg").innerHTML = msg;
         setTimeout(()=>{
-            document.querySelector(".error-toast").classList.add("hidden");
-            document.querySelector(".error-type").innerHTML = '';
-            document.querySelector(".error-msg").innerHTML = '';
-        }, 2 * 1000)
+            closeToast(effect);
+        }, 3.5 * 1000)
     }
 
-    @* fetch("https://localhost:7164/Owner/New", {
-        method: "POST",
-        body: JSON.stringify(
-            {
-                "First_name": "Juanito",
-                "Last_name": "Perez",
-                "Dni": "456",
-                "Phone": "654"
-            }
-        ),
-        headers:{
-            "Content-Type": "application/json",
-            "RequestVerificationToken": "@token"
-        },
-    }).then(res=>res.json()).then(data=>{
-        console.log(data);
-    }).catch(e=>{
-        console.error(e);
-    }) *@
+    function closeToast(effect = null){
+        document.querySelector(".error-toast").classList.add("hidden");
+        document.querySelector(".error-type").innerHTML = '';
+        document.querySelector(".error-msg").innerHTML = '';
+        if(effect) effect();
+    }
+
 </script>
