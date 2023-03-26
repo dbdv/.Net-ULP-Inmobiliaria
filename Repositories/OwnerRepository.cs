@@ -124,8 +124,8 @@ namespace testNetMVC.Repositories
                 using (MySqlConnection connection = new MySqlConnection(_connecString))
                 {
 
-                    string sql = @"INSERT INTO Owners(dni, first_name, last_name, email" + owner.Phone != string.Empty ? ", phone)" : ")"
-                    + "  VALUES (@dni, @first_name, @last_name, @email" + owner.Phone != string.Empty ? ", @phone)" : ")" + "; SELECT LAST_INSERT_ID()";
+                    string sql = @"INSERT INTO Owners(dni, first_name, last_name, email" + (owner.Phone != string.Empty ? ", phone)" : ")") + "  VALUES (@dni, @first_name, @last_name, @email" + (owner.Phone != string.Empty ? ", @phone)" : ")") + "; SELECT LAST_INSERT_ID()";
+                    Console.WriteLine(sql);
                     using (MySqlCommand command = new MySqlCommand(sql, connection))
                     {
                         command.CommandType = System.Data.CommandType.Text;

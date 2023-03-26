@@ -28,14 +28,13 @@ public class OwnerController : Controller
 
     [HttpGet]
     // [ValidateAntiForgeryToken]
-    public IResult All()
+    public IActionResult All()
     {
-        Console.WriteLine("aca");
 
         List<Owner>? owners = ownerRepository.getAll();
 
-        if (owners is null) return Results.Problem("No se pudo recuperar los propietarios.", statusCode: 501);
-        return Results.Json(owners, statusCode: 200);
+        if (owners is null) return Problem("No se pudo recuperar los propietarios.", statusCode: 501);
+        return Json(owners);
     }
 
     [HttpGet]
@@ -50,46 +49,61 @@ public class OwnerController : Controller
 
     [HttpPost]
     [ValidateAntiForgeryToken]
-    public IResult New([FromBody] Owner body)
+    [Route("Owner/new")]
+    public IActionResult New([FromBody] Owner body)
     {
 
         if (body.Email == string.Empty || body.First_name == string.Empty || body.Last_name == string.Empty || body.Dni == string.Empty)
-            return Results.Problem("Datos incorrectos.", statusCode: 400);
+            return BadRequest("Datos incorrectos.");
 
         int created = ownerRepository.create(body);
+        if (created == -1) return Problem("No se pudo crear el propietario", statusCode: 501);
 
-        if (created == -1) return Results.Problem("No se pudo crear el propietario", statusCode: 501);
-
-        return Results.Ok("Agregado correctamente");
+        return Redirect("/Owner");
     }
 
-    [HttpPost]
+    [HttpPut]
     // [ValidateAntiForgeryToken]
-    public IResult Update([FromBody] Owner body)
+    [Route("Owner/update")]
+    public IActionResult Update([FromBody] Owner body)
     {
-
         if (body.Email == string.Empty || body.First_name == string.Empty || body.Last_name == string.Empty || body.Dni == string.Empty)
-            return Results.Problem("Datos incorrectos.", statusCode: 400);
+            return BadRequest("Datos incorrectos.");
 
-        int updated = ownerRepository.create(body);
+        int updated = ownerRepository.update(body);
 
-        if (updated == -1) return Results.Problem("No se pudo actualizar la información del propietario", statusCode: 501);
+        if (updated == -1) return Problem("No se pudo actualizar la información del propietario");
 
-        return Results.Ok("Datos actualizados correctamente");
+        return Ok("Datos actualizados correctamente");
     }
 
     [HttpGet]
     [Route("Owner/get")]
     // [ValidateAntiForgeryToken]
-    public IResult New([FromQuery] int id)
+    public IActionResult Get([FromQuery] int id)
     {
         if (id < 1)
-            return Results.Problem("ID inválido.", statusCode: 400);
+            return Problem("ID inválido.", statusCode: 400);
         var owner = ownerRepository.get(id);
 
-        if (owner is null) return Results.Problem("No se pudo acceder a los datos del usuario", statusCode: 500);
+        if (owner is null) return Problem("No se pudo acceder a los datos del usuario", statusCode: 500);
 
-        return Results.Json(owner, statusCode: 200);
+        // return Redirect("/Owner");
+        return Json(owner);
+    }
+
+    [HttpDelete]
+    [Route("Owner/delete")]
+    // [ValidateAntiForgeryToken]
+    public IActionResult Delete([FromQuery] int id)
+    {
+        if (id < 1)
+            return BadRequest("ID inválido.");
+        var result = ownerRepository.delete(id);
+
+        if (result == -1) return Problem("No se pudo borrar al propietario.", statusCode: 500);
+
+        return Redirect("/Owner");
     }
 
     [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]

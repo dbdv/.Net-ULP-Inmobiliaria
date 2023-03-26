@@ -20,7 +20,7 @@ public class HomeController : Controller
     public IActionResult Index()
     {
 
-        Owner? owner = ownerRepository.get(1);
+        Owner? owner = ownerRepository.getAll()[0];
 
         if (owner == null) return View("loginError");
 
