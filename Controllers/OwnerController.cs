@@ -74,7 +74,7 @@ public class OwnerController : Controller
 
         if (updated == -1) return Problem("No se pudo actualizar la información del propietario");
 
-        return Ok("Datos actualizados correctamente");
+        return Redirect("/Onwer");
     }
 
     [HttpGet]

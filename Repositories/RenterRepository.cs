@@ -1,35 +1,34 @@
 using MySql.Data.MySqlClient;
 using testNetMVC.Models;
-using testNetMVC.Helpers;
 
 namespace testNetMVC.Repositories
 {
-    public class OwnerRepository
+    public class RenterRepository
     {
         private readonly string _connecString = "Server=localhost;User=root;Password=password;Database=dotnettest1;SslMode=none";
 
-        private readonly ILogger<OwnerRepository>? _logger;
-        public OwnerRepository(ILogger logger)
+        private readonly ILogger<RenterRepository>? _logger;
+        public RenterRepository(ILogger logger)
         {
-            _logger = (ILogger<OwnerRepository>)logger;
+            _logger = (ILogger<RenterRepository>)logger;
         }
 
-        public OwnerRepository()
+        public RenterRepository()
         {
         }
 
-        public Owner? get(int id)
+        public Renter? get(int id)
         {
-            Owner? owner = null;
+            Renter? renter = null;
 
-            Console.WriteLine("Retriving one owner");
+            Console.WriteLine("Retriving one renter");
 
             try
             {
                 using (MySqlConnection connection = new MySqlConnection(_connecString))
                 {
                     string[] columns = { "id", "dni", "email", "first_name", "last_name", "phone" };
-                    string sql = @"SELECT " + string.Join(", ", columns) + " FROM owners WHERE id=@id;";
+                    string sql = @"SELECT " + string.Join(", ", columns) + " FROM renters WHERE id=@id;";
                     using (MySqlCommand command = new MySqlCommand(sql, connection))
                     {
 
@@ -45,7 +44,7 @@ namespace testNetMVC.Repositories
 
                         if (reader.Read())
                         {
-                            owner = new Owner
+                            renter = new Renter
                             {
                                 Id = reader["id"].ToString() != null ? Int32.Parse(reader["id"].ToString()!) : null,
                                 Dni = reader["dni"].ToString(),
@@ -61,24 +60,24 @@ namespace testNetMVC.Repositories
             }
             catch (Exception ex)
             {
-                Console.WriteLine("Error retriving owner " + ex);
+                Console.WriteLine("Error retriving renter " + ex);
 
             }
 
-            return owner;
+            return renter;
         }
 
-        public List<Owner>? getAll()
+        public List<Renter>? getAll()
         {
-            List<Owner>? owners = new List<Owner> { };
-            Console.WriteLine("Retriving all owners");
+            List<Renter>? renters = new List<Renter> { };
+            Console.WriteLine("Retriving all renters");
 
             try
             {
                 using (MySqlConnection connection = new MySqlConnection(_connecString))
                 {
                     string columns = "id, dni, email, first_name, last_name, phone";
-                    string sql = @"SELECT " + columns + " FROM owners;";
+                    string sql = @"SELECT " + columns + " FROM renters;";
                     using (MySqlCommand command = new MySqlCommand(sql, connection))
                     {
                         command.CommandType = System.Data.CommandType.Text;
@@ -88,7 +87,7 @@ namespace testNetMVC.Repositories
                         var reader = command.ExecuteReader();
                         while (reader.Read())
                         {
-                            var owner = new Owner
+                            var renter = new Renter
                             {
                                 Id = reader["id"].ToString() != null ? Int32.Parse(reader["id"].ToString()!) : null,
                                 Dni = reader["dni"].ToString(),
@@ -98,7 +97,7 @@ namespace testNetMVC.Repositories
                                 Phone = reader["phone"].ToString()
                             };
 
-                            owners.Add(owner);
+                            renters.Add(renter);
                         }
                         connection.Close();
                     }
@@ -106,35 +105,35 @@ namespace testNetMVC.Repositories
             }
             catch (Exception ex)
             {
-                Console.WriteLine("Error retriving all owners " + ex);
+                Console.WriteLine("Error retriving all renters " + ex);
                 return null;
             }
 
-            return owners;
+            return renters;
         }
 
-        public int create(Owner owner)
+        public int create(Renter renter)
         {
             int id = -1;
 
             try
             {
-                Console.WriteLine("Creating owner");
+                Console.WriteLine("Creating renter");
 
                 using (MySqlConnection connection = new MySqlConnection(_connecString))
                 {
 
-                    string sql = @"INSERT INTO Owners(dni, first_name, last_name, email" + (owner.Phone != string.Empty ? ", phone)" : ")") + "  VALUES (@dni, @first_name, @last_name, @email" + (owner.Phone != string.Empty ? ", @phone)" : ")") + "; SELECT LAST_INSERT_ID()";
+                    string sql = @"INSERT INTO renters(dni, first_name, last_name, email" + (renter.Phone != string.Empty ? ", phone)" : ")") + "  VALUES (@dni, @first_name, @last_name, @email" + (renter.Phone != string.Empty ? ", @phone)" : ")") + "; SELECT LAST_INSERT_ID()";
                     Console.WriteLine(sql);
                     using (MySqlCommand command = new MySqlCommand(sql, connection))
                     {
                         command.CommandType = System.Data.CommandType.Text;
-                        command.Parameters.AddWithValue("@dni", owner.Dni);
-                        command.Parameters.AddWithValue("@first_name", owner.First_name);
-                        command.Parameters.AddWithValue("@last_name", owner.Last_name);
-                        command.Parameters.AddWithValue("@email", owner.Email);
-                        if (owner.Phone != string.Empty)
-                            command.Parameters.AddWithValue("@phone", owner.Phone);
+                        command.Parameters.AddWithValue("@dni", renter.Dni);
+                        command.Parameters.AddWithValue("@first_name", renter.First_name);
+                        command.Parameters.AddWithValue("@last_name", renter.Last_name);
+                        command.Parameters.AddWithValue("@email", renter.Email);
+                        if (renter.Phone != string.Empty)
+                            command.Parameters.AddWithValue("@phone", renter.Phone);
                         connection.Open();
                         id = Convert.ToInt32(command.ExecuteScalar());
                         connection.Close();
@@ -143,7 +142,7 @@ namespace testNetMVC.Repositories
             }
             catch (Exception ex)
             {
-                Console.WriteLine("Error creating the owner " + ex);
+                Console.WriteLine("Error creating the renter " + ex);
             }
 
             return id;
@@ -152,12 +151,12 @@ namespace testNetMVC.Repositories
         public int delete(int id)
         {
             int result = -1;
-            Console.WriteLine("Deleting owner");
+            Console.WriteLine("Deleting renter");
             try
             {
                 using (MySqlConnection connection = new MySqlConnection(_connecString))
                 {
-                    string sql = @"DELETE FROM Owners WHERE id=@id";
+                    string sql = @"DELETE FROM renters WHERE id=@id";
                     using (MySqlCommand command = new MySqlCommand(sql, connection))
                     {
                         command.CommandType = System.Data.CommandType.Text;
@@ -170,31 +169,31 @@ namespace testNetMVC.Repositories
             }
             catch (Exception ex)
             {
-                Console.WriteLine("Error executing delete owner " + ex);
+                Console.WriteLine("Error executing delete renter " + ex);
             }
 
             return result;
         }
 
 
-        public int update(Owner owner)
+        public int update(Renter renter)
         {
             int result = -1;
-            Console.WriteLine("Updating owner");
+            Console.WriteLine("Updating renter");
             try
             {
                 using (MySqlConnection connection = new MySqlConnection(_connecString))
                 {
-                    string sql = @"UPDATE Owners SET dni=@dni, first_name=@first_name, last_name=@last_name, email=@email" + (owner.Phone != string.Empty ? ", phone=@phone" : "") + "WHERE id=@id; SELECT LAST_INSERT_ID()";
+                    string sql = @"UPDATE renters SET dni=@dni, first_name=@first_name, last_name=@last_name, email=@email" + (renter.Phone != string.Empty ? ", phone=@phone" : "") + " WHERE id=@id; SELECT LAST_INSERT_ID()";
                     using (MySqlCommand command = new MySqlCommand(sql, connection))
                     {
                         command.CommandType = System.Data.CommandType.Text;
-                        command.Parameters.AddWithValue("@dni", owner.Dni);
-                        command.Parameters.AddWithValue("@first_name", owner.First_name);
-                        command.Parameters.AddWithValue("@last_name", owner.Last_name);
-                        command.Parameters.AddWithValue("@email", owner.Email);
-                        command.Parameters.AddWithValue("@phone", owner.Phone);
-                        command.Parameters.AddWithValue("@id", owner.Id);
+                        command.Parameters.AddWithValue("@dni", renter.Dni);
+                        command.Parameters.AddWithValue("@first_name", renter.First_name);
+                        command.Parameters.AddWithValue("@last_name", renter.Last_name);
+                        command.Parameters.AddWithValue("@email", renter.Email);
+                        command.Parameters.AddWithValue("@phone", renter.Phone);
+                        command.Parameters.AddWithValue("@id", renter.Id);
                         connection.Open();
                         result = Convert.ToInt32(command.ExecuteScalar());
                         connection.Close();
@@ -203,7 +202,7 @@ namespace testNetMVC.Repositories
             }
             catch (Exception ex)
             {
-                Console.WriteLine("Error updating owner" + ex);
+                Console.WriteLine("Error updating renter" + ex);
             }
 
             return result;

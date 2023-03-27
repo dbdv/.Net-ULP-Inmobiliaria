@@ -20,11 +20,12 @@ public class HomeController : Controller
     public IActionResult Index()
     {
 
-        Owner? owner = ownerRepository.getAll()[0];
+        User? userLogged = null;
 
-        if (owner == null) return View("loginError");
+        // if (user == null) return View("loginError"); // Control para la parte de auth
+        if (userLogged == null) return View(new User { Name = "Falso Usuario" });
 
-        return View(owner);
+        return View(userLogged);
     }
 
     [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]

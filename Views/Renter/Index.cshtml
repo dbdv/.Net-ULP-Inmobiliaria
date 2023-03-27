@@ -1,0 +1,350 @@
+@using Microsoft.AspNetCore.Antiforgery
+@model List<Renter>
+@inject IAntiforgery antiforgery
+@{
+    ViewData["Title"] = "Inquilinos";
+
+    var token = antiforgery.GetAndStoreTokens(Context).RequestToken;
+}
+<section class="section">
+    <ul class="renters-list list">
+        <li class="renter-list-header list-header">
+            <div class="list-colum">
+                <span id="n-intern-header" class="n-intern-column">N° interno</span>
+                <span class="dni-column">Dni</span>
+                <span>Nombre completo</span>
+            </div>
+            <div class="action-buttons list-actions-column">
+                @* <span>Acciones</span> *@
+                <button onclick="createForm()" class="create-btn">+nuevo</button>
+            </div>
+        </li>
+        @{
+            foreach (var renter in Model)
+            {
+                <li class="renter-row list-row">
+                    <div class="list-colum">
+                        <span class="n-intern-column">#@renter.Id</span>
+                        <span class="dni-column">@renter.Dni</span>
+                        <span>@renter.ToString()</span>
+                    </div>
+                    <div class="action-buttons list-actions-column">
+                        <button class="list-action-button primary-bg" onclick="updateForm('@renter.Id')">Actualizar</button>
+                        <button class="list-action-button danger-bg" onclick="confirmDelete('@renter.Id')">Eliminar</button>
+                    </div>
+                </li>
+            }
+        }
+    </ul>
+</section>
+
+<section class="actions-section actions-section-hide section">
+    <form onsubmit="handleSubmit(event)" class="form hidden">
+        <h2 class="form-title">title</h2>
+        <div class="form-row">
+            <label class="form-label" for="">Nombre<sup>*</sup></label>
+            <input onchange="handleChange(event)" onclick="addErrorWatcher(event)" onfocus="addErrorWatcher(event)" autofocus id="name-input" name="first_name" class="form-input" type="text" required>
+            <span class="input-error">Campo obligatorio</span>
+        </div>
+        <div class="form-row">
+            <label class="form-label" for="">Apellido<sup>*</sup></label>
+            <input onchange="handleChange(event)" onclick="addErrorWatcher(event)" onfocus="addErrorWatcher(event)" id="last-name-input" name="last_name" class="form-input" type="text" required>
+            <span class="input-error">Campo obligatorio</span>
+        </div> 
+        <div class="form-row">
+            <label class="form-label" for="">DNI<sup>*</sup></label>
+            <input onchange="handleChange(event)" onclick="addErrorWatcher(event)" onfocus="addErrorWatcher(event)" id="dni-input" name="dni" class="form-input" type="number" min="1000000" required>
+            <span class="input-error">Mínimo 7 dígitos, sólo números</span>
+        </div>
+        <div class="form-row">
+            <label class="form-label" for="">email<sup>*</sup></label>
+            <input onchange="handleChange(event)" onclick="addErrorWatcher(event)" onfocus="addErrorWatcher(event)" id="email-input" name="email" class="form-input" type="email" required>
+            <span class="input-error">No es un email válido</span>
+        </div>
+        <div class="form-row">
+            <label class="form-label" for="">teléfono</label>
+            <input onchange="handleChange(event)" id="phone-input" name="phone" class="form-input" type="text">
+        </div>
+        <div class="form-buttons">
+            <button class="confirm-btn disabled-btn" id="send-button" disabled></button>
+            <button class="cancel-btn" onclick="cancelAction()">Cancelar</button>
+        </div>
+    </form>
+    
+    <div class="confirm-delete confirm-dialog hidden">
+        <span>Está seguro que desea eliminar?</span>
+        <div class="buttons">
+            <button class="delete-btn">Eliminar</button>
+            <button class="cancel-btn" onclick="cancelAction()">Cancelar</button>
+        </div>
+    </div>
+
+    <div class="spinner"></div>
+
+    <div class="toast error-toast hidden">
+        <span class="toast-title error-type"></span>
+        <span class="toast-info error-msg"></span>
+    </div>
+    
+</section>
+
+<script>
+
+    document.body.addEventListener('keydown', (e)=>{
+        if(e.key === "Escape") {
+            hideActions();
+        }
+    });
+
+    const base_url = "https://localhost:7164/Renter/";
+
+    let last_action;
+    let delete_id = null;
+
+    const default_body = {
+        first_name: null,
+        last_name: null,
+        email: null,
+        phone: null,
+        dni: null
+    };
+
+    let body_data = default_body;
+
+
+    function handleSubmit(e){
+        e.preventDefault();
+    }
+
+    function handleChange(event){
+        const key = event.target.name;
+        body_data[key] = event.target.value.trim();
+        console.log(body_data)
+        if( body_data.first_name?.length > 3 
+            && body_data.last_name?.length > 3
+            && parseInt(body_data?.dni) > 99999
+            && body_data.email?.length > 3
+        ){
+        console.log("datos ok")
+            document.querySelector("#send-button").removeAttribute("disabled"); 
+            document.querySelector("#send-button").classList.remove("disabled-btn");
+        }else{
+        console.log("datos ok'nt")
+            document.querySelector("#send-button").setAttribute("disabled", "");
+            document.querySelector("#send-button").classList.add("disabled-btn");
+        }
+    }
+
+    function clearForm(){
+        document.querySelector("#name-input").value='';
+        document.querySelector("#last-name-input").value='';
+        document.querySelector("#dni-input").value='';
+        document.querySelector("#email-input").value='';
+        document.querySelector("#phone-input").value='';
+        document.querySelector(".error-toast").classList.add("hidden");
+        body_data = default_body;
+        document.querySelector("#send-button").removeEventListener("click",()=>{sendCreateReq()});
+    }
+    
+    function showActions(){
+        document.querySelector(".actions-section").classList.remove("actions-section-hide")
+    }
+    
+    function hideActions(){
+        document.querySelector(".actions-section").classList.add("actions-section-hide")
+        document.querySelector(".form").classList.add("hidden");
+        document.querySelector(".confirm-delete").classList.add("hidden");
+        document.querySelector(".spinner").classList.remove("hidden");
+        document.querySelector(".error-toast").classList.add("hidden");
+        delete_id = null;
+    }
+
+    function cancelAction(){
+        document.querySelector(".actions-section").classList.add("actions-section-hide")
+        document.querySelector(".form").classList.add("hidden");
+        document.querySelector(".confirm-delete").classList.add("hidden");
+        document.querySelector(".spinner").classList.remove("hidden");
+        clearForm();
+        removeErrorWatcher();
+        delete_id = null;
+    }
+
+    function confirmDelete(id){
+        document.querySelector(".spinner").classList.add("hidden");
+        document.querySelector(".confirm-delete").classList.remove("hidden");
+        document.querySelector(".delete-btn").addEventListener("click", ()=>{deleteRenter(id)})
+        showActions();
+    }
+
+    function deleteRenter(id){
+        document.querySelector(".confirm-delete").classList.add("hidden");
+        document.querySelector(".spinner").classList.remove("hidden");
+        
+        if(id !== null){
+            fetch(`${base_url}delete?id=${id}`, {
+                method: "DELETE",
+                headers:{
+                    "Content-Type": "application/json",
+                    "RequestVerificationToken": "@token"
+                },
+            }).then(res=>{
+                if(res.status != 200)
+                    showError("Error", "No se pudo eliminar el inquilino, intenta nuevamente.");
+                if(res.redirected)
+                    window.location.href =res.url;
+                
+            }).catch(e=>{
+                console.error(e);
+            })
+        }
+    }
+    
+    function createForm(){
+        showActions();
+        if(last_action == 'update') clearForm();
+        last_action = 'create';
+        document.querySelector(".form-title").innerHTML = "Nuevo inquilino";
+        document.querySelector("#send-button").innerHTML = "Agregar";
+        document.querySelector("#send-button").addEventListener("click", ()=>{sendCreateReq()});
+        document.querySelector(".spinner").classList.add("hidden");
+        document.querySelector(".form").classList.remove("hidden");
+    }
+    
+    function updateForm(renter_id){
+        
+        last_action = 'update';
+        showActions();
+
+        fetch(`${base_url}get?id=${parseInt(renter_id)}`, {
+            headers:{
+                "RequestVerificationToken": "@token"
+            }
+        }).then(res=>res.json()).then(data=>{
+            console.log(data);
+            setCurrentOwnerData(data)
+            document.querySelector(".spinner").classList.add("hidden");
+            document.querySelector(".form").classList.remove("hidden");
+        }).catch(e=>{
+            console.error(e);
+        })
+        document.querySelector(".form-title").innerHTML = "Actualizar datos de inquilino";
+        document.querySelector("#send-button").innerHTML = "Actualizar";
+    }
+
+    function setCurrentOwnerData(renter){
+        body_data = {...renter};
+        document.querySelector("#name-input").value=renter.first_name;
+        document.querySelector("#last-name-input").value=renter.last_name;
+        document.querySelector("#dni-input").value=renter.dni;
+        document.querySelector("#email-input").value=renter.email;
+        if(renter.phone)
+            document.querySelector("#phone-input").value=renter.phone;
+        document.querySelector("#send-button").addEventListener("click", ()=>{sendUpdateReq(renter.id)});
+    }
+
+    function sendCreateReq(){
+
+        const emailReg = new RegExp('^(([^<>()[\]\.,;:\s@@\"]+(\.[^<>()[\]\.,;:\s@@\"]+)*)|(\".+\"))@@(([^<>()[\]\.,;:\s@@\"]+\.)+[^<>()[\]\.,;:\s@@\"]{2,})$', "i");
+        const first_name = document.querySelector("#name-input").value;
+        const last_name = document.querySelector("#last-name-input").value;
+        const dni = document.querySelector("#dni-input").value;
+        const email = document.querySelector("#email-input").value;
+        const phone = document.querySelector("#phone-input").value;
+
+        if(first_name.length < 3)
+            return showError('Datos inválidos', 'No completó correctamente el campo "Nombre"');
+        if(last_name.length < 3)
+            return showError('Datos inválidos', 'No completó correctamente el campo "Apellido"');
+        if(dni < 1000000)
+            return showError('Datos inválidos', 'No completó correctamente el campo "DNI"');
+        if(@* !emailReg.test(email) *@ email.length < 10)
+            return showError('Datos inválidos', 'No completó correctamente el campo "Email"');
+
+        const body = {
+            "First_name": first_name,
+            "Last_name": last_name,
+            "Dni": dni,
+            "Email": email,
+            "Phone": phone
+        }
+
+        document.querySelector(".form").classList.add("hidden");
+        document.querySelector(".spinner").classList.remove("hidden");
+
+        fetch(`${base_url}new`, {
+                method: "POST",
+                headers:{
+                    "Content-Type": "application/json",
+                    "RequestVerificationToken": "@token"
+                },
+                body: JSON.stringify(body),
+            }).then(res=>{
+                if(res.status != 200)
+                    showError("Error", "No se pudo crear el inquilino, intenta nuevamente.", ()=>{
+                        document.querySelector(".form").classList.remove("hidden");
+                    });
+                if(res.redirected)
+                    window.location.href =res.url;
+                
+            }).catch(e=>{
+                console.error(e);
+        })
+    }
+    
+    function sendUpdateReq(){
+
+        document.querySelector(".form").classList.add("hidden");
+        document.querySelector(".spinner").classList.remove("hidden");
+
+        fetch(`${base_url}update`, {
+                method: "PUT",
+                headers:{
+                    "Content-Type": "application/json",
+                    "RequestVerificationToken": "@token"
+                },
+                body: JSON.stringify(body_data),
+            }).then(res=>{
+                if(res.status != 200)
+                    showError("Error", "No se pudo crear el inquilino, intenta nuevamente.", ()=>{
+                        document.querySelector(".form").classList.remove("hidden");
+                    });
+                if(res.redirected)
+                    window.location.href =res.url;
+                
+            }).catch(e=>{
+                console.error(e);
+        })
+    }
+
+    function addErrorWatcher(event){
+        event.target.classList.add("error-watcher");
+    }
+    
+    function removeErrorWatcher(){
+        document.querySelectorAll(".error-watcher").forEach(input=>{
+            input.classList.remove("error-watcher");
+        })
+    }
+    
+    function removeDeleteListener(){
+        document.querySelector(".delete-btn").removeEventListener("click", deleteRenter)
+    }
+    
+    function showError(type, msg, effect = null){
+        document.querySelector(".spinner").classList.add("hidden");
+        document.querySelector(".error-toast").classList.remove("hidden");
+        document.querySelector(".error-type").innerHTML = type;
+        document.querySelector(".error-msg").innerHTML = msg;
+        setTimeout(()=>{
+            closeToast(effect);
+        }, 3.5 * 1000)
+    }
+
+    function closeToast(effect = null){
+        document.querySelector(".error-toast").classList.add("hidden");
+        document.querySelector(".error-type").innerHTML = '';
+        document.querySelector(".error-msg").innerHTML = '';
+        if(effect) effect();
+    }
+
+</script>
