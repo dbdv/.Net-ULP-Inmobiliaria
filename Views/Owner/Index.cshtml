@@ -29,7 +29,8 @@
                         <span>@owner.ToString()</span>
                     </div>
                     <div class="action-buttons list-actions-column">
-                        <button class="list-action-button primary-bg" onclick="updateForm('@owner.Id')">Actualizar</button>
+                        <button class="list-action-button neutral-bg" onclick="showOwnerDetail('@owner.Id')">Ver</button>
+                        <button class="list-action-button edit-bg" onclick="updateForm('@owner.Id')">Editar</button>
                         <button class="list-action-button danger-bg" onclick="confirmDelete('@owner.Id')">Eliminar</button>
                     </div>
                 </li>
@@ -68,6 +69,30 @@
         <div class="form-buttons">
             <button class="confirm-btn disabled-btn" id="send-button" disabled></button>
             <button class="cancel-btn" onclick="cancelAction()">Cancelar</button>
+        </div>
+    </form>
+    
+    <form onsubmit="handleSubmit(event)" class="form-detail hidden">
+        <h2 class="form-title">Detalles</h2>
+        <div class="form-row">
+            <label class="form-label" for="">Nombre</label>
+            <input disabled id="name-detail" name="first_name" class="form-detail-field" type="text" required>
+        </div>
+        <div class="form-row">
+            <label class="form-label" for="">Apellido</label>
+            <input disabled id="last-name-detail" name="last_name" class="form-detail-field" type="text" required>
+        </div> 
+        <div class="form-row">
+            <label class="form-label" for="">DNI</label>
+            <input disabled id="dni-detail" name="dni" class="form-detail-field" type="number" min="1000000" required>
+        </div>
+        <div class="form-row">
+            <label class="form-label" for="">email</label>
+            <input disabled id="email-detail" name="email" class="form-detail-field" type="email" required>
+        </div>
+        <div class="form-row">
+            <label class="form-label" for="">teléfono</label>
+            <input disabled id="phone-detail" name="phone" class="form-detail-field" type="text">
         </div>
     </form>
     
@@ -153,6 +178,7 @@
     function hideActions(){
         document.querySelector(".actions-section").classList.add("actions-section-hide")
         document.querySelector(".form").classList.add("hidden");
+        document.querySelector(".form-detail").classList.add("hidden");
         document.querySelector(".confirm-delete").classList.add("hidden");
         document.querySelector(".spinner").classList.remove("hidden");
         document.querySelector(".error-toast").classList.add("hidden");
@@ -240,6 +266,36 @@
         if(owner.phone)
             document.querySelector("#phone-input").value=owner.phone;
         document.querySelector("#send-button").addEventListener("click", ()=>{sendUpdateReq(owner.id)});
+    }
+
+    function displayOwnerInfo(owner){
+        document.querySelector("#name-detail").value=owner.first_name;
+        document.querySelector("#last-name-detail").value=owner.last_name;
+        document.querySelector("#dni-detail").value=owner.dni;
+        document.querySelector("#email-detail").value=owner.email;
+        if(owner.phone)
+            document.querySelector("#phone-detail").value=owner.phone;
+    }
+    
+    function showOwnerDetail(id){
+        
+        showActions();
+
+        fetch(`${base_url}get?id=${parseInt(id)}`, {
+            headers:{
+                "RequestVerificationToken": "@token"
+            }
+        }).then(res=>res.json()).then(data=>{
+            if(!data)
+                return showError("Error", "No se pudo acceder a los datos del propietario, intenta nuevamente.", ()=>{
+                    hideActions();
+                });
+            displayOwnerInfo(data);
+            document.querySelector(".spinner").classList.add("hidden");
+            document.querySelector(".form-detail").classList.remove("hidden");
+        }).catch(e=>{
+            console.error(e);
+        })
     }
 
     function sendCreateReq(){

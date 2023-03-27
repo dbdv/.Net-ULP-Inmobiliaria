@@ -1,4 +1,5 @@
-.form {
+.form,
+.form-detail {
   width: 600px;
   background: white;
   display: flex;
@@ -42,8 +43,24 @@
   padding-left: 1rem;
 }
 
-.form-input {
+.form-input,
+.form-detail-field {
   padding: 0.3rem 1rem;
+}
+
+.form-detail {
+  width: 400px;
+}
+
+.form-detail > .form-title {
+  text-align: left;
+  padding-left: 2rem;
+}
+
+.form-detail-field {
+  color: black;
+  border: none;
+  width: 200px;
 }
 
 .error-watcher:not(:focus):invalid ~ .input-error {
