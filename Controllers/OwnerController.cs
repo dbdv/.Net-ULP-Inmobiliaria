@@ -49,7 +49,7 @@ public class OwnerController : Controller
 
     [HttpPost]
     [ValidateAntiForgeryToken]
-    [Route("Owner/new")]
+    [Route(nameof(Owner) + "/new")]
     public IActionResult New([FromBody] Owner body)
     {
 
@@ -59,12 +59,12 @@ public class OwnerController : Controller
         int created = ownerRepository.create(body);
         if (created == -1) return Problem("No se pudo crear el propietario", statusCode: 501);
 
-        return Redirect("/Owner");
+        return Redirect("/" + nameof(Owner));
     }
 
     [HttpPut]
     // [ValidateAntiForgeryToken]
-    [Route("Owner/update")]
+    [Route(nameof(Owner) + "/update")]
     public IActionResult Update([FromBody] Owner body)
     {
         if (body.Email == string.Empty || body.First_name == string.Empty || body.Last_name == string.Empty || body.Dni == string.Empty)
@@ -74,11 +74,11 @@ public class OwnerController : Controller
 
         if (updated == -1) return Problem("No se pudo actualizar la información del propietario");
 
-        return Redirect("/Onwer");
+        return Redirect("/" + nameof(Owner));
     }
 
     [HttpGet]
-    [Route("Owner/get")]
+    [Route(nameof(Owner) + "/get")]
     // [ValidateAntiForgeryToken]
     public IActionResult Get([FromQuery] int id)
     {
@@ -93,7 +93,7 @@ public class OwnerController : Controller
     }
 
     [HttpDelete]
-    [Route("Owner/delete")]
+    [Route(nameof(Owner) + "/delete")]
     // [ValidateAntiForgeryToken]
     public IActionResult Delete([FromQuery] int id)
     {
@@ -103,7 +103,7 @@ public class OwnerController : Controller
 
         if (result == -1) return Problem("No se pudo borrar al propietario.", statusCode: 500);
 
-        return Redirect("/Owner");
+        return Redirect("/" + nameof(Owner));
     }
 
     [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]

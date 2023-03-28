@@ -21,7 +21,7 @@ namespace testNetMVC.Repositories
         {
             Renter? renter = null;
 
-            Console.WriteLine("Retriving one renter");
+            Console.WriteLine("---Retriving one renter");
 
             try
             {
@@ -36,7 +36,7 @@ namespace testNetMVC.Repositories
                         command.Parameters.AddWithValue("@id", id);
                         if (_logger != null)
                             _logger.LogInformation("hola");
-                        Console.WriteLine("Executing query: \n\n\t" + command.CommandText.Replace("@id", id.ToString()) + "\n");
+                        Console.WriteLine("---Executing query: \n\n\t" + command.CommandText.Replace("@id", id.ToString()) + "\n");
 
                         connection.Open();
 
@@ -60,7 +60,7 @@ namespace testNetMVC.Repositories
             }
             catch (Exception ex)
             {
-                Console.WriteLine("Error retriving renter " + ex);
+                Console.WriteLine("---Error retriving renter " + ex);
 
             }
 
@@ -70,7 +70,7 @@ namespace testNetMVC.Repositories
         public List<Renter>? getAll()
         {
             List<Renter>? renters = new List<Renter> { };
-            Console.WriteLine("Retriving all renters");
+            Console.WriteLine("---Retriving all renters");
 
             try
             {
@@ -105,7 +105,7 @@ namespace testNetMVC.Repositories
             }
             catch (Exception ex)
             {
-                Console.WriteLine("Error retriving all renters " + ex);
+                Console.WriteLine("---Error retriving all renters " + ex);
                 return null;
             }
 
@@ -118,7 +118,7 @@ namespace testNetMVC.Repositories
 
             try
             {
-                Console.WriteLine("Creating renter");
+                Console.WriteLine("---Creating renter");
 
                 using (MySqlConnection connection = new MySqlConnection(_connecString))
                 {
@@ -142,7 +142,7 @@ namespace testNetMVC.Repositories
             }
             catch (Exception ex)
             {
-                Console.WriteLine("Error creating the renter " + ex);
+                Console.WriteLine("---Error creating the renter " + ex);
             }
 
             return id;
@@ -151,7 +151,7 @@ namespace testNetMVC.Repositories
         public int delete(int id)
         {
             int result = -1;
-            Console.WriteLine("Deleting renter");
+            Console.WriteLine("---Deleting renter");
             try
             {
                 using (MySqlConnection connection = new MySqlConnection(_connecString))
@@ -169,7 +169,7 @@ namespace testNetMVC.Repositories
             }
             catch (Exception ex)
             {
-                Console.WriteLine("Error executing delete renter " + ex);
+                Console.WriteLine("---Error executing delete renter " + ex);
             }
 
             return result;
@@ -179,7 +179,7 @@ namespace testNetMVC.Repositories
         public int update(Renter renter)
         {
             int result = -1;
-            Console.WriteLine("Updating renter");
+            Console.WriteLine("---Updating renter");
             try
             {
                 using (MySqlConnection connection = new MySqlConnection(_connecString))
@@ -202,7 +202,7 @@ namespace testNetMVC.Repositories
             }
             catch (Exception ex)
             {
-                Console.WriteLine("Error updating renter" + ex);
+                Console.WriteLine("---Error updating renter" + ex);
             }
 
             return result;
