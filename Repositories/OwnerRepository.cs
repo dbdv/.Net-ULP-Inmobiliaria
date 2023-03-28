@@ -22,7 +22,7 @@ namespace testNetMVC.Repositories
         {
             Owner? owner = null;
 
-            Console.WriteLine("Retriving one owner");
+            Console.WriteLine("---Retriving one owner");
 
             try
             {
@@ -37,7 +37,7 @@ namespace testNetMVC.Repositories
                         command.Parameters.AddWithValue("@id", id);
                         if (_logger != null)
                             _logger.LogInformation("hola");
-                        Console.WriteLine("Executing query: \n\n\t" + command.CommandText.Replace("@id", id.ToString()) + "\n");
+                        Console.WriteLine("---Executing query: \n\n\t" + command.CommandText.Replace("@id", id.ToString()) + "\n");
 
                         connection.Open();
 
@@ -61,7 +61,7 @@ namespace testNetMVC.Repositories
             }
             catch (Exception ex)
             {
-                Console.WriteLine("Error retriving owner " + ex);
+                Console.WriteLine("---Error retriving owner " + ex);
 
             }
 
@@ -71,7 +71,7 @@ namespace testNetMVC.Repositories
         public List<Owner>? getAll()
         {
             List<Owner>? owners = new List<Owner> { };
-            Console.WriteLine("Retriving all owners");
+            Console.WriteLine("---Retriving all owners");
 
             try
             {
@@ -106,7 +106,7 @@ namespace testNetMVC.Repositories
             }
             catch (Exception ex)
             {
-                Console.WriteLine("Error retriving all owners " + ex);
+                Console.WriteLine("---Error retriving all owners " + ex);
                 return null;
             }
 
@@ -143,7 +143,7 @@ namespace testNetMVC.Repositories
             }
             catch (Exception ex)
             {
-                Console.WriteLine("Error creating the owner " + ex);
+                Console.WriteLine("---Error creating the owner " + ex);
             }
 
             return id;
@@ -152,7 +152,7 @@ namespace testNetMVC.Repositories
         public int delete(int id)
         {
             int result = -1;
-            Console.WriteLine("Deleting owner");
+            Console.WriteLine("---Deleting owner");
             try
             {
                 using (MySqlConnection connection = new MySqlConnection(_connecString))
@@ -170,7 +170,7 @@ namespace testNetMVC.Repositories
             }
             catch (Exception ex)
             {
-                Console.WriteLine("Error executing delete owner " + ex);
+                Console.WriteLine("---Error executing delete owner " + ex);
             }
 
             return result;
@@ -180,12 +180,14 @@ namespace testNetMVC.Repositories
         public int update(Owner owner)
         {
             int result = -1;
-            Console.WriteLine("Updating owner");
+            Console.WriteLine("---Updating owner");
             try
             {
                 using (MySqlConnection connection = new MySqlConnection(_connecString))
                 {
-                    string sql = @"UPDATE Owners SET dni=@dni, first_name=@first_name, last_name=@last_name, email=@email" + (owner.Phone != string.Empty ? ", phone=@phone" : "") + "WHERE id=@id; SELECT LAST_INSERT_ID()";
+                    string sql = @"UPDATE Owners SET dni=@dni, first_name=@first_name, last_name=@last_name, email=@email"
+                     + (owner.Phone != string.Empty ? ", phone=@phone" : "")
+                     + " WHERE id=@id;";
                     using (MySqlCommand command = new MySqlCommand(sql, connection))
                     {
                         command.CommandType = System.Data.CommandType.Text;
@@ -196,7 +198,7 @@ namespace testNetMVC.Repositories
                         command.Parameters.AddWithValue("@phone", owner.Phone);
                         command.Parameters.AddWithValue("@id", owner.Id);
                         connection.Open();
-                        result = Convert.ToInt32(command.ExecuteScalar());
+                        result = Convert.ToInt32(command.ExecuteNonQuery());
                         connection.Close();
                     }
                 }
