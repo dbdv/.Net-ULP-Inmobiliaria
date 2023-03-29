@@ -44,27 +44,27 @@
         <h2 class="form-title">title</h2>
         <div class="form-row">
             <label class="form-label" for="">Nombre<sup>*</sup></label>
-            <input onchange="handleChange(event)" onclick="addErrorWatcher(event)" onfocus="addErrorWatcher(event)" autofocus id="name-input" name="first_name" class="form-input" type="text" required>
+            <input onchange="handleChange(event)" onclick="addErrorWatcher(event)" onfocus="addErrorWatcher(event)" onfocusout="checkInputs()" id="name-input" name="first_name" class="form-input" type="text" required>
             <span class="input-error">Campo obligatorio</span>
         </div>
         <div class="form-row">
             <label class="form-label" for="">Apellido<sup>*</sup></label>
-            <input onchange="handleChange(event)" onclick="addErrorWatcher(event)" onfocus="addErrorWatcher(event)" id="last-name-input" name="last_name" class="form-input" type="text" required>
+            <input onchange="handleChange(event)" onclick="addErrorWatcher(event)" onfocus="addErrorWatcher(event)" onfocusout="checkInputs()" id="last-name-input" name="last_name" class="form-input" type="text" required>
             <span class="input-error">Campo obligatorio</span>
         </div> 
         <div class="form-row">
             <label class="form-label" for="">DNI<sup>*</sup></label>
-            <input onchange="handleChange(event)" onclick="addErrorWatcher(event)" onfocus="addErrorWatcher(event)" id="dni-input" name="dni" class="form-input" type="number" min="1000000" required>
+            <input onchange="handleChange(event)" onclick="addErrorWatcher(event)" onfocus="addErrorWatcher(event)" onfocusout="checkInputs()" id="dni-input" name="dni" class="form-input" type="number" min="1000000" required>
             <span class="input-error">Mínimo 7 dígitos, sólo números</span>
         </div>
         <div class="form-row">
             <label class="form-label" for="">email<sup>*</sup></label>
-            <input onchange="handleChange(event)" onclick="addErrorWatcher(event)" onfocus="addErrorWatcher(event)" id="email-input" name="email" class="form-input" type="email" required>
+            <input onchange="handleChange(event)" onclick="addErrorWatcher(event)" onfocus="addErrorWatcher(event)" onfocusout="checkInputs()" id="email-input" name="email" class="form-input" type="email" required>
             <span class="input-error">No es un email válido</span>
         </div>
         <div class="form-row">
             <label class="form-label" for="">teléfono</label>
-            <input onchange="handleChange(event)" id="phone-input" name="phone" class="form-input" type="text">
+            <input onchange="handleChange(event)" onfocusout="checkInputs()" id="phone-input" name="phone" class="form-input" type="text">
         </div>
         <div class="form-buttons">
             <button class="confirm-btn disabled-btn" id="send-button" disabled></button>
@@ -145,16 +145,18 @@
         const key = event.target.name;
         body_data[key] = event.target.value.trim();
         console.log(body_data)
+        checkInputs();
+    }
+
+    function checkInputs(){
         if( body_data.first_name?.length > 3 
             && body_data.last_name?.length > 3
             && parseInt(body_data?.dni) > 99999
             && body_data.email?.length > 3
         ){
-        console.log("datos ok")
             document.querySelector("#send-button").removeAttribute("disabled"); 
             document.querySelector("#send-button").classList.remove("disabled-btn");
         }else{
-        console.log("datos ok'nt")
             document.querySelector("#send-button").setAttribute("disabled", "");
             document.querySelector("#send-button").classList.add("disabled-btn");
         }
