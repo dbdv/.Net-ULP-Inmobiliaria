@@ -1,8 +1,3 @@
-﻿@model User
-@{
-    ViewData["Title"] = "Home";
+﻿@{
+    Layout = "~/Views/Shared/_LoginLayout.cshtml";
 }
-<section class="home-section section">
-    <h1 class="home-title">Bienvenido <span>@Model.ToString()</span></h1>
-    <h2 class="home-subtitle">Has iniciado sesión como <span>administrador</span></h2>
-</section>

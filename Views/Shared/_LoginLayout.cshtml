@@ -1,0 +1,87 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Inmobiliaria Bustillos | Login</title>
+    <link rel="stylesheet" href="~/css/login.css" asp-append-version="true" />
+</head>
+<body>
+    <main role="main" class="login-main">
+        <section class="welcome">
+            <div class="presentation-div">
+                <h1 class="home-title">Inmobiliaria <span>Bustillos</span></h1>
+                <img class="home-img" src="https://blog.fmb.mx/hubfs/sitio-web-inmobiliaria-ventas-real-estate-agencia-marketing-inmobiliario-fmb-2020.jpg" alt="">
+            </div>
+        </section>
+        <section class="login">
+            <form class="login-form" onsubmit="handleSubmit(event)">
+                <div onclick="removeLoginError()" class="inputs-box">
+                    <input onchange="handleChange(event)" name="email" class="login-form-input" autofocus tabindex="1" type="text" placeholder="Email...">
+                    <input onchange="handleChange(event)" name="password" class="login-form-input" tabindex="2" type="password" placeholder="Contraseña...">
+                </div>
+                <button disabled class="login-button" tabindex="3" onclick="handleSubmit(event)">Ingresar</button>
+                <div class="links-box">
+                    <a href="#" class="link github-link">Ingresar con GitHub</a>
+                    <a href="#" class="link pass-forgot-link">Recuperar contraseña</a>
+                </div>
+            </form>
+        </section>
+    </main>
+    <script defer>
+
+        const base_url = "https://localhost:7164/";
+
+        const user = {
+            email : '',
+            password : ''
+        }
+        
+        function handleChange(e){
+            e.preventDefault();
+            user[e.target.name] = e.target.value;
+            checkInput();
+        }
+
+        function checkInput(){
+            if(user.email.length && user.password.length) {
+                console.log("ok")
+                document.querySelector(".login-button").removeAttribute("disabled");
+            }else{
+                console.log("no ok")
+                document.querySelector(".login-button").setAttribute("disabled", true);
+            }
+        }
+        function removeLoginError(){
+            document.querySelector(".login-button").classList.remove("login-error");
+        }
+        
+        function handleSubmit(e){
+            e.preventDefault();
+
+            fetch(base_url+"login", {
+                method: "POST",
+                body: JSON.stringify(user),
+                headers:{
+                    "content-type": "application/json"
+                }
+            }).then(res=>{
+                if(res.status !== 200){
+                    console.log("error code")
+                    document.querySelector(".login-button").classList.add("login-error");
+                }
+                return res.json();
+            }).then(data=>{
+                if(data){
+                    localStorage.setItem("user_name", data.user_name);
+                    document.location.href = "/home";
+                }
+            })
+        }
+    </script>
+
+    @RenderBody()
+
+    @await RenderSectionAsync("Scripts", required: false)
+</body>
+</html>

@@ -1,0 +1,14 @@
+﻿@{
+    ViewData["Title"] = "Home";
+    var types = @Html.Raw(Json.Serialize(ViewBag.types));
+}
+
+<section class="home-section section">
+    <h1 class="home-title">Bienvenido <span id="user_name"></span></h1>
+    <h2 class="home-subtitle">Has iniciado sesión como <span>administrador</span></h2>
+</section>
+
+<script>
+    console.log(@types);
+    document.querySelector("#user_name").innerHTML = localStorage.getItem("user_name");
+</script>
