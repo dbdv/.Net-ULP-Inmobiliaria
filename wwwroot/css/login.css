@@ -88,6 +88,7 @@
   border: 2px solid transparent;
   border-radius: 10px;
   outline: none;
+  background: gray;
 }
 
 .login-button:not(:disabled) {
