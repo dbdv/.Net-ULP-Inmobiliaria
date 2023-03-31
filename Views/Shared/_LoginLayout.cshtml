@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Inmobiliaria Bustillos | Login</title>
     <link rel="stylesheet" href="~/css/login.css" asp-append-version="true" />
+    <link rel="shortcut icon" href="~/favicon.ico" type="image/x-icon"/>
 </head>
 <body>
     <main role="main" class="login-main">
@@ -17,12 +18,12 @@
         <section class="login">
             <form class="login-form" onsubmit="handleSubmit(event)">
                 <div onclick="removeLoginError()" class="inputs-box">
-                    <input onchange="handleChange(event)" name="email" class="login-form-input" autofocus tabindex="1" type="text" placeholder="Email...">
+                    <input onchange="handleChange(event)" name="email" class="login-form-input" autofocus tabindex="1" type="email" placeholder="Email...">
                     <input onchange="handleChange(event)" name="password" class="login-form-input" tabindex="2" type="password" placeholder="Contraseña...">
                 </div>
                 <button disabled class="login-button" tabindex="3" onclick="handleSubmit(event)">Ingresar</button>
                 <div class="links-box">
-                    <a href="#" class="link github-link">Ingresar con GitHub</a>
+                    <a href="#" class="link github-link"><img src="~/images/github-icon.png">Ingresar con GitHub</a>
                     <a href="#" class="link pass-forgot-link">Recuperar contraseña</a>
                 </div>
             </form>
