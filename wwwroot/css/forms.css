@@ -25,6 +25,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
+  gap: 1rem;
 }
 
 .form-label {
@@ -46,15 +47,32 @@
 .form-input,
 .form-detail-field {
   padding: 0.3rem 1rem;
+  width: 300px;
+}
+
+.form-input-select {
+  /* flex: 1; */
+  display: flex;
+  background: transparent;
+  border: 1px solid;
 }
 
 .form-detail {
   width: 400px;
 }
 
+.form-detail-props {
+  width: 600px;
+}
+
 .form-detail > .form-title {
   text-align: left;
   padding-left: 2rem;
+}
+
+.form-detail > .form-title-props {
+  text-align: center;
+  padding-left: 0;
 }
 
 .form-detail-field {
@@ -63,11 +81,18 @@
   width: 200px;
 }
 
+.invalid:not(:focus) ~ .input-error,
 .error-watcher:not(:focus):invalid ~ .input-error {
   display: block;
 }
 
-.error-watcher:not(:focus):invalid {
+#owner-input:not(:focus):invalid ~ .input-error {
+  inset: 0;
+  top: 100%;
+}
+
+.error-watcher:not(:focus):invalid,
+.invalid:not(:focus) {
   border-color: #ea4d4d;
 }
 
@@ -117,4 +142,35 @@ input[type="number"] {
 .form-buttons > .disabled-btn:focus-within {
   scale: none;
   cursor: auto;
+}
+
+.options-div {
+  display: flex;
+  flex-direction: column;
+  position: relative;
+}
+
+.options-div .options-modal {
+  display: flex;
+  flex-direction: column;
+  position: absolute;
+  right: 0;
+  left: 0;
+  top: 100%;
+  background-color: white;
+}
+
+.option-span {
+  padding: 0.3rem 1rem;
+  cursor: pointer;
+  border: 1px solid transparent;
+  border-left-color: darkgray;
+  border-right-color: darkgray;
+}
+
+.option-span:last-child {
+  border-bottom-color: darkgray;
+}
+.option-span:hover {
+  border-color: darkgray;
 }

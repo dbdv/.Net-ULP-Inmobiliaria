@@ -13,7 +13,9 @@
     <link rel="stylesheet" href="~/css/forms.css" asp-append-version="true" />
     <link rel="stylesheet" href="~/css/toast.css" asp-append-version="true" />
     <link rel="stylesheet" href="~/css/spinner.css" asp-append-version="true" />
+    <link rel="shortcut icon" href="~/favicon.ico" type="image/x-icon"/>
     <script src="~/js/header.js" defer asp-append-version="true" ></script>
+    <script src="https://kit.fontawesome.com/dc8ad386a2.js" crossorigin="anonymous" asp-append-version="true" ></script>
 </head>
 <body>
     <header>
@@ -31,7 +33,7 @@
                     <span class="menu-label">Propietarios</span>
                     <ul class="menu-ul">
                         <li class="menu-item menu-indicator" tabindex="3">
-                            <a asp-action="Index" asp-controller="Owner">
+                            <a asp-action="Index" asp-controller=@nameof(Owner)>
                                 Ver todos
                             </a>
                         </li>
@@ -43,7 +45,7 @@
                     <span class="menu-label">Inquilinos</span>
                     <ul class="menu-ul">
                         <li class="menu-item menu-indicator" tabindex="3">
-                            <a asp-action="Index" asp-controller="Renter">
+                            <a asp-action="Index" asp-controller=@nameof(Renter)>
                                 Ver todos
                             </a>
                         </li>
@@ -63,7 +65,7 @@
                     <span class="menu-label">Inmuebles</span>
                     <ul class="menu-ul">
                         <li class="menu-item" tabindex="16">
-                            <a asp-action="Index" asp-controller="Propertiy">
+                            <a asp-action="Index" asp-controller=@nameof(Property)>
                                 Ver todos
                             </a>
                         </li>

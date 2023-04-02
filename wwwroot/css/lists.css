@@ -47,7 +47,7 @@
 }
 
 .n-intern-column {
-  width: 100px;
+  width: 90px;
   text-align: center;
 }
 
@@ -58,6 +58,18 @@
 .dni-column {
   width: 100px;
   text-align: left;
+}
+
+.prop-list-field {
+  width: 120px;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.address-field {
+  width: 200px;
+  text-overflow: ellipsis;
 }
 
 .list-colum {

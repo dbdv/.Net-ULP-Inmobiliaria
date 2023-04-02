@@ -17,8 +17,14 @@ public class PropertyController : Controller
 
     public IActionResult Index()
     {
+        TypeRepository type_repo = new TypeRepository();
+        PurposeRepository purpose_repo = new PurposeRepository();
+        OwnerRepository owner_repo = new OwnerRepository();
 
         List<Property>? properties = propertyRepository.getAll();
+        ViewBag.types = (List<PropType>)type_repo.getAll();
+        ViewBag.purposes = (List<Purpose>)purpose_repo.getAll();
+        ViewBag.owners = (List<Owner>)owner_repo.getAll();
 
         if (properties is null) return View("loginError");
 
@@ -46,22 +52,23 @@ public class PropertyController : Controller
         return Results.Ok(properties);
     }
 
-    /*
 
     [HttpPost]
     [ValidateAntiForgeryToken]
-    [Route("Property/new")]
-    public IActionResult New([FromBody] Property body)
+    [Route("Property")]
+    public IActionResult Create([FromBody] Property body)
     {
 
-        if (body.Email == string.Empty || body.First_name == string.Empty || body.Last_name == string.Empty || body.Dni == string.Empty)
+        if (body.Address == string.Empty || body.Owner_id < 1 || body.Price < 1 || body.Purpose_id < 1 || body.Rooms < 1 || body.Type_id < 1)
             return BadRequest("Datos incorrectos.");
 
         int created = propertyRepository.create(body);
-        if (created == -1) return Problem("No se pudo crear el inquilino", statusCode: 501);
+        if (created == -1) return Problem("No se pudo agregar la propiedad", statusCode: 501);
 
-        return Redirect("/Property");
+        return Redirect("/" + nameof(Property));
     }
+
+    /*
 
     [HttpPut]
     // [ValidateAntiForgeryToken]
@@ -80,9 +87,9 @@ public class PropertyController : Controller
     */
 
     [HttpGet]
-    [Route("Property/get")]
+    [Route("Property/{id}")]
     // [ValidateAntiForgeryToken]
-    public IActionResult Get([FromQuery] int id)
+    public IActionResult Get(int id)
     {
         if (id < 1)
             return Problem("ID inválido.", statusCode: 400);
@@ -94,19 +101,18 @@ public class PropertyController : Controller
         return Json(owner);
     }
 
-    /*
     [HttpDelete]
-    [Route("Property/delete")]
+    [Route("Property/{id}")]
     // [ValidateAntiForgeryToken]
-    public IActionResult Delete([FromQuery] int id)
+    public IActionResult Delete(int id)
     {
         if (id < 1)
             return BadRequest("ID inválido.");
         var result = propertyRepository.delete(id);
 
-        if (result == -1) return Problem("No se pudo borrar al inquilino.", statusCode: 500);
+        if (result == -1) return Problem("No se pudo borrar el inmueble.", statusCode: 500);
 
-        return Redirect("/Property");
+        return Redirect("/" + nameof(Property));
     }
 
     [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
@@ -114,5 +120,4 @@ public class PropertyController : Controller
     {
         return View();
     }
-    */
 }

@@ -1,5 +1,4 @@
 function logout() {
-  console.log("estoy aca");
-  localStorage.clear();
+  sessionStorage.clear();
   document.location.href = "/";
 }

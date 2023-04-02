@@ -1,5 +1,5 @@
 using MySql.Data.MySqlClient;
-using Type = testNetMVC.Models.Type;
+using testNetMVC.Models;
 
 namespace testNetMVC.Repositories
 {
@@ -17,9 +17,9 @@ namespace testNetMVC.Repositories
         {
         }
 
-        public Type? get(int id)
+        public PropType? get(int id)
         {
-            Type? type = null;
+            PropType? type = null;
 
             Console.WriteLine("---Retriving one type");
 
@@ -41,7 +41,7 @@ namespace testNetMVC.Repositories
 
                         if (reader.Read())
                         {
-                            type = new Type
+                            type = new PropType
                             {
                                 Id = reader["id"].ToString() != null ? Int32.Parse(reader["id"].ToString()!) : null,
                                 Label = reader["label"].ToString(),
@@ -60,9 +60,9 @@ namespace testNetMVC.Repositories
             return type;
         }
 
-        public List<Type>? getAll()
+        public List<PropType>? getAll()
         {
-            List<Type>? types = new List<Type> { };
+            List<PropType>? types = new List<PropType> { };
             Console.WriteLine("---Retriving all types");
 
             try
@@ -79,7 +79,7 @@ namespace testNetMVC.Repositories
                         var reader = command.ExecuteReader();
                         while (reader.Read())
                         {
-                            var type = new Type
+                            var type = new PropType
                             {
                                 Id = reader["id"].ToString() != null ? Int32.Parse(reader["id"].ToString()!) : null,
                                 Label = reader["label"].ToString(),
@@ -101,7 +101,7 @@ namespace testNetMVC.Repositories
         }
 
         /*
-        public int create(Type owner)
+        public int create(PropType owner)
         {
             int id = -1;
 
@@ -165,7 +165,7 @@ namespace testNetMVC.Repositories
         }
 
 
-        public int update(Type owner)
+        public int update(PropType owner)
         {
             int result = -1;
             Console.WriteLine("---Updating owner");
