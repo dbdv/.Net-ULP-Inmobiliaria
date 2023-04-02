@@ -2,7 +2,7 @@ using System.ComponentModel.DataAnnotations;
 
 namespace testNetMVC.Models
 {
-    public class Type
+    public class PropType
     {
         [Key]
         public int? Id { get; set; }

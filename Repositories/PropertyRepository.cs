@@ -34,8 +34,8 @@ namespace testNetMVC.Repositories
                     FROM properties props
                     JOIN owners ON owners.id = props.owner_id
                     JOIN purposes ON purposes.id = props.purpose_id
-                    JOIN types ON types.id = props_type_id
-                    WHERE id=@id;";
+                    JOIN types ON types.id = props.type_id
+                    WHERE props.id=@id;";
                     using (MySqlCommand command = new MySqlCommand(sql, connection))
                     {
 
@@ -55,8 +55,10 @@ namespace testNetMVC.Repositories
                             {
                                 Id = reader["id"].ToString() != null ? Int32.Parse(reader["id"].ToString()!) : null,
                                 Address = reader["address"].ToString(),
-                                Latitude = Convert.ToDouble(reader["latitude"]),
-                                Longitude = Convert.ToDouble(reader["longitude"]),
+                                Rooms = Convert.ToInt32(reader["rooms"]),
+                                Price = Convert.ToDouble(reader["price"]),
+                                // Latitude = Convert.ToDouble(reader["latitude"]),
+                                // Longitude = Convert.ToDouble(reader["longitude"]),
                                 Owner_id = Convert.ToInt32(reader["owner_id"].ToString()),
                                 Owner = new Owner
                                 {
@@ -65,7 +67,7 @@ namespace testNetMVC.Repositories
                                     First_name = reader["first_name"].ToString(),
                                     Last_name = reader["last_name"].ToString(),
                                     Id = Convert.ToInt32(reader["owner_id"].ToString()),
-                                    Phone = reader["phone"].ToString(),
+                                    // Phone = reader["phone"].ToString(),
                                 },
                                 Purpose_id = Convert.ToInt32(reader["purpose_id"].ToString()),
                                 Purpose = new Purpose
@@ -74,7 +76,7 @@ namespace testNetMVC.Repositories
                                     Description = reader["description"].ToString()
                                 },
                                 Type_id = Convert.ToInt32(reader["type_id"].ToString()),
-                                Type = new testNetMVC.Models.Type
+                                PropType = new PropType
                                 {
                                     Id = Convert.ToInt32(reader["type_id"].ToString()),
                                     Label = reader["label"].ToString(),
@@ -125,8 +127,10 @@ namespace testNetMVC.Repositories
                             {
                                 Id = reader["id"].ToString() != null ? Int32.Parse(reader["id"].ToString()!) : null,
                                 Address = reader["address"].ToString(),
-                                Latitude = Convert.ToDouble(reader["latitude"]),
-                                Longitude = Convert.ToDouble(reader["longitude"]),
+                                Rooms = Convert.ToInt32(reader["rooms"]),
+                                Price = Convert.ToDouble(reader["price"]),
+                                // Latitude = Convert.ToDouble(reader["latitude"]),
+                                // Longitude = Convert.ToDouble(reader["longitude"]),
                                 Owner_id = Convert.ToInt32(reader["owner_id"].ToString()),
                                 Owner = new Owner
                                 {
@@ -135,7 +139,7 @@ namespace testNetMVC.Repositories
                                     First_name = reader["first_name"].ToString(),
                                     Last_name = reader["last_name"].ToString(),
                                     Id = Convert.ToInt32(reader["owner_id"].ToString()),
-                                    Phone = reader["phone"].ToString(),
+                                    // Phone = reader["phone"].ToString(),
                                 },
                                 Purpose_id = Convert.ToInt32(reader["purpose_id"].ToString()),
                                 Purpose = new Purpose
@@ -144,7 +148,7 @@ namespace testNetMVC.Repositories
                                     Description = reader["description"].ToString()
                                 },
                                 Type_id = Convert.ToInt32(reader["type_id"].ToString()),
-                                Type = new testNetMVC.Models.Type
+                                PropType = new PropType
                                 {
                                     Id = Convert.ToInt32(reader["type_id"].ToString()),
                                     Label = reader["label"].ToString(),
@@ -166,7 +170,6 @@ namespace testNetMVC.Repositories
             return properties;
         }
 
-        /*
         public int create(Property property)
         {
             int id = -1;
@@ -178,17 +181,21 @@ namespace testNetMVC.Repositories
                 using (MySqlConnection connection = new MySqlConnection(_connecString))
                 {
 
-                    string sql = @"INSERT INTO properties(dni, first_name, last_name, email" + (renter.Phone != string.Empty ? ", phone)" : ")") + "  VALUES (@dni, @first_name, @last_name, @email" + (renter.Phone != string.Empty ? ", @phone)" : ")") + "; SELECT LAST_INSERT_ID()";
+                    string sql = @"INSERT INTO properties(purpose_id, type_id, rooms, latitude, longitude, price, owner_id, address) 
+                    VALUES (@purpose_id, @type_id, @rooms, @latitude, @longitude, @price, @owner_id, @address);
+                    SELECT LAST_INSERT_ID()";
                     Console.WriteLine(sql);
                     using (MySqlCommand command = new MySqlCommand(sql, connection))
                     {
                         command.CommandType = System.Data.CommandType.Text;
-                        command.Parameters.AddWithValue("@dni", renter.Dni);
-                        command.Parameters.AddWithValue("@first_name", renter.First_name);
-                        command.Parameters.AddWithValue("@last_name", renter.Last_name);
-                        command.Parameters.AddWithValue("@email", renter.Email);
-                        if (renter.Phone != string.Empty)
-                            command.Parameters.AddWithValue("@phone", renter.Phone);
+                        command.Parameters.AddWithValue("@purpose_id", property.Purpose_id);
+                        command.Parameters.AddWithValue("@type_id", property.Type_id);
+                        command.Parameters.AddWithValue("@rooms", property.Rooms);
+                        command.Parameters.AddWithValue("@price", property.Price);
+                        command.Parameters.AddWithValue("@latitude", property.Latitude);
+                        command.Parameters.AddWithValue("@longitude", property.Longitude);
+                        command.Parameters.AddWithValue("@owner_id", property.Owner_id);
+                        command.Parameters.AddWithValue("@address", property.Address);
                         connection.Open();
                         id = Convert.ToInt32(command.ExecuteScalar());
                         connection.Close();
@@ -203,7 +210,6 @@ namespace testNetMVC.Repositories
             return id;
         }
 
-                
         public int delete(int id)
         {
             int result = -1;
@@ -225,12 +231,13 @@ namespace testNetMVC.Repositories
             }
             catch (Exception ex)
             {
-                Console.WriteLine("---Error executing delete renter " + ex);
+                Console.WriteLine("---Error executing delete property " + ex);
             }
 
             return result;
         }
 
+        /*
 
         public int update(Renter renter)
         {

@@ -3,7 +3,7 @@
 @inject IAntiforgery antiforgery
 @{
     ViewData["Title"] = "Propiedades";
-
+    var owners = @Html.Raw(Json.Serialize(ViewBag.owners));
     var token = antiforgery.GetAndStoreTokens(Context).RequestToken;
 }
 <section class="section">
@@ -11,11 +11,10 @@
         <li class="renter-list-header list-header">
             <div class="list-colum">
                 <span id="n-intern-header" class="n-intern-column">N° interno</span>
-                <span class="dni-column">Tipo</span>
-                <span>Uso</span>
-                <span>Dirección</span>
-                <span>Dueño</span>
-                <span>Contacto</span>
+                <span class="prop-list-field">Uso</span>
+                <span class="prop-list-field">Dueño</span>
+                <span class="prop-list-field">Contacto</span>
+                <span class="prop-list-field address-field">Dirección</span>
             </div>
             <div class="action-buttons list-actions-column">
                 <button onclick="createForm()" class="create-btn">+nuevo</button>
@@ -27,14 +26,13 @@
                 <li class="renter-row list-row">
                     <div class="list-colum">
                         <span class="n-intern-column">#@property.Id</span>
-                        <span class="dni-column">@property.Type?.Label</span>
-                        <span>@property.Purpose?.Description</span>
-                        <span>@property.Address</span>
-                        <span>@property.Owner?.ToString()</span>
-                        <span>@property.Owner?.Phone?.ToString()</span>
+                        <span class="prop-list-field">@property.Purpose?.Description</span>
+                        <span class="prop-list-field">@property.Owner?.ToString()</span>
+                        <span class="prop-list-field">@property.Owner?.Phone?.ToString()</span>
+                        <span class="prop-list-field address-field">@property.Address</span>
                     </div>
                     <div class="action-buttons list-actions-column">
-                        <button class="list-action-button neutral-bg" onclick="showOwnerDetail('@property.Id')">Ver</button>
+                        <button class="list-action-button neutral-bg" onclick="showPropertyDetail('@property.Id')">Ver</button>
                         <button class="list-action-button edit-bg" onclick="updateForm('@property.Id')">Editar</button>
                         <button class="list-action-button danger-bg" onclick="confirmDelete('@property.Id')">Eliminar</button>
                     </div>
@@ -45,31 +43,50 @@
 </section>
 
 <section class="actions-section actions-section-hide section">
-    <form onsubmit="handleSubmit(event)" class="form hidden">
+    <form onsubmit="handleSubmit(event)" onclick="handleGeneralFormClicks(event)" class="form hidden">
         <h2 class="form-title">title</h2>
         <div class="form-row">
-            <label class="form-label" for="">Nombre<sup>*</sup></label>
-            <input onchange="handleChange(event)" onclick="addErrorWatcher(event)" onfocus="addErrorWatcher(event)" onfocusout="checkInputs()" id="name-input" name="first_name" class="form-input" type="text" required>
+            <label class="form-label" for="">@Html.DisplayNameFor(Props=>Props[0].Type_id)<sup>*</sup></label>
+            <select class="form-input form-input-select" name="type_id" id="type_id" onchange="handleChange(event)">
+                <option value="null">Selecciona</option>
+                @foreach(var prop_type in ((List<PropType>)ViewBag.types)){
+                    <option value=@prop_type.Id>@prop_type.Label</option>
+                }
+            </select>
             <span class="input-error">Campo obligatorio</span>
         </div>
         <div class="form-row">
-            <label class="form-label" for="">Apellido<sup>*</sup></label>
-            <input onchange="handleChange(event)" onclick="addErrorWatcher(event)" onfocus="addErrorWatcher(event)" onfocusout="checkInputs()" id="last-name-input" name="last_name" class="form-input" type="text" required>
+            <label class="form-label" for="">@Html.DisplayNameFor(Props=>Props[0].Purpose_id)<sup>*</sup></label>
+            <select class="form-input form-input-select" name="purpose_id" id="purpose_id" onchange="handleChange(event)">
+                <option value="null">Selecciona</option>
+                @foreach(var purpose in ((List<Purpose>)ViewBag.purposes)){
+                    <option value=@purpose.Id>@purpose.Description</option>
+                }
+            </select>
             <span class="input-error">Campo obligatorio</span>
         </div> 
         <div class="form-row">
-            <label class="form-label" for="">DNI<sup>*</sup></label>
-            <input onchange="handleChange(event)" onclick="addErrorWatcher(event)" onfocus="addErrorWatcher(event)" onfocusout="checkInputs()" id="dni-input" name="dni" class="form-input" type="number" min="1000000" required>
-            <span class="input-error">Mínimo 7 dígitos, sólo números</span>
+            <label class="form-label" for="">@Html.DisplayNameFor(Props=>Props[0].Rooms)<sup>*</sup></label>
+            <input onchange="handleChange(event)" onclick="addErrorWatcher(event)" onfocus="addErrorWatcher(event)" onfocusout="checkInputs()" id="rooms-input" name="rooms" class="form-input" type="number" min="1" required>
+            <span class="input-error">Mínimo 1, sólo números</span>
         </div>
         <div class="form-row">
-            <label class="form-label" for="">email<sup>*</sup></label>
-            <input onchange="handleChange(event)" onclick="addErrorWatcher(event)" onfocus="addErrorWatcher(event)" onfocusout="checkInputs()" id="email-input" name="email" class="form-input" type="email" required>
-            <span class="input-error">No es un email válido</span>
+            <label class="form-label" for="">@Html.DisplayNameFor(Props=>Props[0].Price)<sup>*</sup></label>
+            <input onchange="handleChange(event)" onclick="addErrorWatcher(event)" onfocus="addErrorWatcher(event)" onfocusout="checkInputs()" id="price-input" name="price" class="form-input" type="number" min="1" required>
+            <span class="input-error">No es un valor válido</span>
         </div>
         <div class="form-row">
-            <label class="form-label" for="">teléfono</label>
-            <input onchange="handleChange(event)" onfocusout="checkInputs()" id="phone-input" name="phone" class="form-input" type="text">
+            <label class="form-label" for="">@Html.DisplayNameFor(Props=>Props[0].Address)<sup>*</sup></label>
+            <input onchange="handleChange(event)" onclick="addErrorWatcher(event)" onfocus="addErrorWatcher(event)" onfocusout="checkInputs()" id="address-input" name="address" class="form-input" type="text" required>
+            <span class="input-error">Campo obligatorio</span>
+        </div>
+        <div class="form-row">
+            <label class="form-label" for="">@Html.DisplayNameFor(Props=>Props[0].Owner_id)<sup>*</sup></label>
+            <div class="options-div">
+                <input onkeyup="handleSuggestions(event)"  onclick="addErrorWatcher(event)" onfocus="addErrorWatcher(event)" onfocusout="checkInputs()" id="owner-input" name="owner" class="form-input suggestions" type="text" required>
+                <span class="input-error">Campo obligatorio</span>
+                <div class="options-modal hidden"></div>
+            </div>
         </div>
         <div class="form-buttons">
             <button class="confirm-btn disabled-btn" id="send-button" disabled></button>
@@ -77,27 +94,41 @@
         </div>
     </form>
 
-    <form onsubmit="handleSubmit(event)" class="form-detail hidden">
-        <h2 class="form-title">Detalles</h2>
+    <form onsubmit="handleSubmit(event)" class="form-detail form-detail-props hidden">
+        <h2 class="form-title form-title-props">Detalles de propiedad</h2>
         <div class="form-row">
-            <label class="form-label" for="">Nombre</label>
-            <input disabled id="name-detail" name="first_name" class="form-detail-field" type="text" required>
+            <label class="form-label" for="">@Html.DisplayNameFor(Props=>Props[0].Type_id)<sup>*</sup></label>
+            <select disabled class="form-input form-input-select" name="type_id" id="type_id-detail" onchange="handleChange(event)">
+                @foreach(var prop_type in ((List<PropType>)ViewBag.types)){
+                    <option value=@prop_type.Id>@prop_type.Label</option>
+                }
+            </select>
         </div>
         <div class="form-row">
-            <label class="form-label" for="">Apellido</label>
-            <input disabled id="last-name-detail" name="last_name" class="form-detail-field" type="text" required>
+            <label class="form-label" for="">@Html.DisplayNameFor(Props=>Props[0].Purpose_id)<sup>*</sup></label>
+            <select disabled class="form-input form-input-select" name="purpose_id" id="purpose_id-detail" onchange="handleChange(event)">
+                @foreach(var purpose in ((List<Purpose>)ViewBag.purposes)){
+                    <option value=@purpose.Id>@purpose.Description</option>
+                }
+            </select>
         </div> 
         <div class="form-row">
-            <label class="form-label" for="">DNI</label>
-            <input disabled id="dni-detail" name="dni" class="form-detail-field" type="number" min="1000000" required>
+            <label class="form-label" for="">@Html.DisplayNameFor(Props=>Props[0].Rooms)<sup>*</sup></label>
+            <input disabled onchange="handleChange(event)" onclick="addErrorWatcher(event)" onfocus="addErrorWatcher(event)" onfocusout="checkInputs()" id="rooms-field-detail" name="rooms" class="form-input" type="number" min="1" required>
         </div>
         <div class="form-row">
-            <label class="form-label" for="">email</label>
-            <input disabled id="email-detail" name="email" class="form-detail-field" type="email" required>
+            <label class="form-label" for="">@Html.DisplayNameFor(Props=>Props[0].Price)<sup>*</sup></label>
+            <input disabled onchange="handleChange(event)" onclick="addErrorWatcher(event)" onfocus="addErrorWatcher(event)" onfocusout="checkInputs()" id="price-field-detail" name="price" class="form-input" type="number" min="1" required>
         </div>
         <div class="form-row">
-            <label class="form-label" for="">teléfono</label>
-            <input disabled id="phone-detail" name="phone" class="form-detail-field" type="text">
+            <label class="form-label" for="">@Html.DisplayNameFor(Props=>Props[0].Address)<sup>*</sup></label>
+            <input disabled onchange="handleChange(event)" onclick="addErrorWatcher(event)" onfocus="addErrorWatcher(event)" onfocusout="checkInputs()" id="address-field-detail" name="address" class="form-input" type="text" required>
+        </div>
+        <div class="form-row">
+            <label class="form-label" for="">@Html.DisplayNameFor(Props=>Props[0].Owner_id)<sup>*</sup></label>
+            <div class="options-div">
+                <input disabled onkeyup="handleSuggestions(event)"  onclick="addErrorWatcher(event)" onfocus="addErrorWatcher(event)" onfocusout="checkInputs()" id="owner-field-detail" name="owner" class="form-input suggestions" type="text" required>
+            </div>
         </div>
     </form>
     
@@ -126,17 +157,18 @@
         }
     });
 
-    const base_url = "https://localhost:7164/Renter/";
+    const base_url = "https://localhost:7164/Property/";
 
     let last_action;
     let delete_id = null;
 
     const default_body = {
-        first_name: null,
-        last_name: null,
-        email: null,
-        phone: null,
-        dni: null
+        owner_id: null,
+        purpose_id: null,
+        type_id: null,
+        rooms: null,
+        price: null,
+        address: null,
     };
 
     let body_data = default_body;
@@ -148,16 +180,28 @@
 
     function handleChange(event){
         const key = event.target.name;
-        body_data[key] = event.target.value.trim();
+        if(event.target.name == 'type_id' || event.target.name == 'purpose_id'){
+            const val = parseInt(event.target.value.trim());
+            body_data[key] =  !isNaN(val) ? val : null;
+            if(!body_data[key]){
+                event.target.classList.add('invalid');
+            }else{
+                event.target.classList.remove('invalid');
+            }
+        }else{
+            body_data[key] = event.target.value.trim();
+        }
         console.log(body_data)
         checkInputs();
     }
 
     function checkInputs(){
-        if( body_data.first_name?.length > 3 
-            && body_data.last_name?.length > 3
-            && parseInt(body_data?.dni) > 99999
-            && body_data.email?.length > 3
+        if( body_data.address?.length > 5 
+            && body_data.owner_id > 0
+            && body_data.purpose_id > 0
+            && body_data.type_id > 0
+            && body_data.rooms > 0
+            && body_data.price > 0
         ){
             document.querySelector("#send-button").removeAttribute("disabled"); 
             document.querySelector("#send-button").classList.remove("disabled-btn");
@@ -168,11 +212,12 @@
     }
 
     function clearForm(){
-        document.querySelector("#name-input").value='';
-        document.querySelector("#last-name-input").value='';
-        document.querySelector("#dni-input").value='';
-        document.querySelector("#email-input").value='';
-        document.querySelector("#phone-input").value='';
+        document.querySelector("#owner-input").value='';
+        document.querySelector("#address-input").value='';
+        document.querySelector("#price-input").value='';
+        document.querySelector("#rooms-input").value='';
+        document.querySelector('#type_id').value=null;
+        document.querySelector('#purpose_id').value=null;
         document.querySelector(".error-toast").classList.add("hidden");
         body_data = default_body;
         document.querySelector("#send-button").removeEventListener("click",()=>{sendCreateReq()});
@@ -209,12 +254,12 @@
         showActions();
     }
 
-    function deleteRenter(id){
+    function deleteProperty(id){
         document.querySelector(".confirm-delete").classList.add("hidden");
         document.querySelector(".spinner").classList.remove("hidden");
         
         if(id !== null){
-            fetch(`${base_url}delete?id=${id}`, {
+            fetch(`${base_url}${id}`, {
                 method: "DELETE",
                 headers:{
                     "Content-Type": "application/json",
@@ -222,7 +267,7 @@
                 },
             }).then(res=>{
                 if(res.status != 200)
-                    showError("Error", "No se pudo eliminar el inquilino, intenta nuevamente.");
+                    showError("Error", "No se pudo eliminar el inmueble, intenta nuevamente.");
                 if(res.redirected)
                     window.location.href =res.url;
                 
@@ -236,67 +281,68 @@
         showActions();
         if(last_action == 'update') clearForm();
         last_action = 'create';
-        document.querySelector(".form-title").innerHTML = "Nuevo inquilino";
+        document.querySelector(".form-title").innerHTML = "Nueva propiedad";
         document.querySelector("#send-button").innerHTML = "Agregar";
         document.querySelector("#send-button").addEventListener("click", ()=>{sendCreateReq()});
         document.querySelector(".spinner").classList.add("hidden");
         document.querySelector(".form").classList.remove("hidden");
     }
     
-    function updateForm(renter_id){
+    function updateForm(prop_id){
         
         last_action = 'update';
         showActions();
 
-        fetch(`${base_url}get?id=${parseInt(renter_id)}`, {
+        fetch(`${base_url}${parseInt(prop_id)}`, {
             headers:{
                 "RequestVerificationToken": "@token"
             }
         }).then(res=>res.json()).then(data=>{
             console.log(data);
-            setCurrentOwnerData(data)
+            setCurrentPropertyData(data)
             document.querySelector(".spinner").classList.add("hidden");
             document.querySelector(".form").classList.remove("hidden");
         }).catch(e=>{
             console.error(e);
         })
-        document.querySelector(".form-title").innerHTML = "Actualizar datos de inquilino";
+        document.querySelector(".form-title").innerHTML = "Actualizar datos de propiedad";
         document.querySelector("#send-button").innerHTML = "Actualizar";
     }
 
-    function setCurrentOwnerData(renter){
-        body_data = {...renter};
-        document.querySelector("#name-input").value=renter.first_name;
-        document.querySelector("#last-name-input").value=renter.last_name;
-        document.querySelector("#dni-input").value=renter.dni;
-        document.querySelector("#email-input").value=renter.email;
-        if(renter.phone)
-            document.querySelector("#phone-input").value=renter.phone;
-        document.querySelector("#send-button").addEventListener("click", ()=>{sendUpdateReq(renter.id)});
+    function setCurrentPropertyData(property){
+        body_data = {...property};
+        const owner = (@owners).find(item=>item.id == body_data.owner_id);
+        document.querySelector("#owner-input").value= owner.first_name + " " + owner.last_name + " " + owner.dni; 
+        document.querySelector("#address-input").value=body_data.address;
+        document.querySelector("#price-input").value=parseInt(body_data.price);
+        document.querySelector("#rooms-input").value=body_data.rooms;
+        document.querySelector("#purpose_id").value=body_data.purpose_id;
+        document.querySelector("#type_id").value=body_data.type_id;
+        document.querySelector("#send-button").addEventListener("click", ()=>{sendUpdateReq(property.id)});
     }
-    function displayOwnerInfo(owner){
-        document.querySelector("#name-detail").value=owner.first_name;
-        document.querySelector("#last-name-detail").value=owner.last_name;
-        document.querySelector("#dni-detail").value=owner.dni;
-        document.querySelector("#email-detail").value=owner.email;
-        if(owner.phone)
-            document.querySelector("#phone-detail").value=owner.phone;
+    function displayPropertyInfo(property){
+        document.querySelector("#type_id-detail").value=property.type_id;
+        document.querySelector("#purpose_id-detail").value=property.purpose_id;
+        document.querySelector("#rooms-field-detail").value=property.rooms;
+        document.querySelector("#price-field-detail").value="$" + property.price;
+        document.querySelector("#address-field-detail").value=property.address;
+        document.querySelector("#owner-field-detail").value= property.owner.first_name + " " + property.owner.last_name + " " + property.owner.dni;
     }
     
-    function showOwnerDetail(id){
+    function showPropertyDetail(id){
         
         showActions();
 
-        fetch(`${base_url}get?id=${parseInt(id)}`, {
+        fetch(`${base_url}${parseInt(id)}`, {
             headers:{
                 "RequestVerificationToken": "@token"
             }
         }).then(res=>res.json()).then(data=>{
             if(!data)
-                return showError("Error", "No se pudo acceder a los datos del propietario, intenta nuevamente.", ()=>{
+                return showError("Error", "No se pudo acceder a los datos de la propiedad, intenta nuevamente.", ()=>{
                     hideActions();
                 });
-            displayOwnerInfo(data);
+            displayPropertyInfo(data);
             document.querySelector(".spinner").classList.add("hidden");
             document.querySelector(".form-detail").classList.remove("hidden");
         }).catch(e=>{
@@ -305,34 +351,29 @@
     }
     function sendCreateReq(){
 
-        const emailReg = new RegExp('^(([^<>()[\]\.,;:\s@@\"]+(\.[^<>()[\]\.,;:\s@@\"]+)*)|(\".+\"))@@(([^<>()[\]\.,;:\s@@\"]+\.)+[^<>()[\]\.,;:\s@@\"]{2,})$', "i");
-        const first_name = document.querySelector("#name-input").value;
-        const last_name = document.querySelector("#last-name-input").value;
-        const dni = document.querySelector("#dni-input").value;
-        const email = document.querySelector("#email-input").value;
-        const phone = document.querySelector("#phone-input").value;
-
-        if(first_name.length < 3)
-            return showError('Datos inválidos', 'No completó correctamente el campo "Nombre"');
-        if(last_name.length < 3)
-            return showError('Datos inválidos', 'No completó correctamente el campo "Apellido"');
-        if(dni < 1000000)
-            return showError('Datos inválidos', 'No completó correctamente el campo "DNI"');
-        if(@* !emailReg.test(email) *@ email.length < 10)
-            return showError('Datos inválidos', 'No completó correctamente el campo "Email"');
+        if(
+            body_data.address?.length < 5 
+            && body_data.owner_id < 0
+            && body_data.purpose_id < 0
+            && body_data.type_id < 0
+            && body_data.rooms < 0
+            && body_data.price < 0
+        )
+            return showError('Datos inválidos', 'No completó correctamente alguno de los datos.');
 
         const body = {
-            "First_name": first_name,
-            "Last_name": last_name,
-            "Dni": dni,
-            "Email": email,
-            "Phone": phone
+            "Address": body_data.address,
+            "Owner_id": body_data.owner_id,
+            "Price": body_data.price,
+            "Purpose_id": body_data.purpose_id,
+            "Rooms": body_data.rooms,
+            "Type_id": body_data.type_id,
         }
 
         document.querySelector(".form").classList.add("hidden");
         document.querySelector(".spinner").classList.remove("hidden");
 
-        fetch(`${base_url}new`, {
+        fetch(`${base_url}`, {
                 method: "POST",
                 headers:{
                     "Content-Type": "application/json",
@@ -341,7 +382,7 @@
                 body: JSON.stringify(body),
             }).then(res=>{
                 if(res.status != 200)
-                    showError("Error", "No se pudo crear el inquilino, intenta nuevamente.", ()=>{
+                    showError("Error", "No se pudo agregar la propiedad, intenta nuevamente.", ()=>{
                         document.querySelector(".form").classList.remove("hidden");
                     });
                 if(res.redirected)
@@ -388,7 +429,7 @@
     }
     
     function removeDeleteListener(){
-        document.querySelector(".delete-btn").removeEventListener("click", deleteRenter)
+        document.querySelector(".delete-btn").removeEventListener("click", deleteProperty)
     }
     
     function showError(type, msg, effect = null){
@@ -406,6 +447,51 @@
         document.querySelector(".error-type").innerHTML = '';
         document.querySelector(".error-msg").innerHTML = '';
         if(effect) effect();
+    }
+
+    function handleSuggestions(e){
+        const keyword = document.querySelector("#owner-input").value;
+        const options_div = document.querySelector(".options-modal");
+        options_div.innerHTML = '';
+        body_data.owner_id = null;
+        if(keyword.trim().length > 2){
+            const matches = (@owners).filter(item=>{
+                return (item.first_name+" "+item.last_name + " " + item.dni).toLowerCase().includes(keyword.toLowerCase())
+            })
+
+            matches.forEach(match=>{
+                options_div.classList.remove("hidden")
+                const span = document.createElement('span');
+                span.id = match.id;
+                span.classList.add("option-span");
+                span.innerText = match.first_name + " " + match.last_name + " " + match.dni;
+                span.addEventListener('click', ()=>{
+                    body_data.owner_id = match.id;
+                    document.querySelector("#owner-input").value = match.first_name + " " + match.last_name + " " + match.dni;
+                    document.querySelector("#owner-input").setAttribute('isvalid', true);
+                    options_div.classList.add("hidden")
+                    document.querySelector("#owner-input").classList.remove('invalid');
+                    checkInputs();
+                })
+                options_div.appendChild(span);
+            })
+        }else{
+            options_div.classList.add("hidden")
+        }
+        console.log(body_data,  Boolean(body_data.owner_id));
+        if(!body_data.owner_id)
+            document.querySelector("#owner-input").classList.add('invalid');
+        checkInputs();
+    }
+
+    function hideSuggetions(){
+        document.querySelector(".options-modal").classList.add("hidden")
+    }
+
+    function handleGeneralFormClicks(event){
+        if(!event.target.classList.contains("span-option")){
+            hideSuggetions()
+        }
     }
 
 </script>

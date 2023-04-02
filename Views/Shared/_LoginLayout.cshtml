@@ -24,7 +24,7 @@
                 <button disabled class="login-button" tabindex="3" onclick="handleSubmit(event)">Ingresar</button>
                 <div class="links-box">
                     <a href="#" class="link github-link"><img src="~/images/github-icon.png">Ingresar con GitHub</a>
-                    <a href="#" class="link pass-forgot-link">Recuperar contraseña</a>
+                    <a href="#" class="link pass-forgot-link"><img src="~/images/forgot-password-icon.png">Recuperar contraseña</a>
                 </div>
             </form>
         </section>
@@ -74,7 +74,7 @@
                 return res.json();
             }).then(data=>{
                 if(data){
-                    localStorage.setItem("user_name", data.user_name);
+                    sessionStorage.setItem("user_name", data.user_name);
                     document.location.href = "/home";
                 }
             })

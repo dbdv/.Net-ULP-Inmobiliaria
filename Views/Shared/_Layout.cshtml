@@ -33,7 +33,7 @@
                     <span class="menu-label">Propietarios</span>
                     <ul class="menu-ul">
                         <li class="menu-item menu-indicator" tabindex="3">
-                            <a asp-action="Index" asp-controller="Owner">
+                            <a asp-action="Index" asp-controller=@nameof(Owner)>
                                 Ver todos
                             </a>
                         </li>
@@ -45,7 +45,7 @@
                     <span class="menu-label">Inquilinos</span>
                     <ul class="menu-ul">
                         <li class="menu-item menu-indicator" tabindex="3">
-                            <a asp-action="Index" asp-controller="Renter">
+                            <a asp-action="Index" asp-controller=@nameof(Renter)>
                                 Ver todos
                             </a>
                         </li>
@@ -65,7 +65,7 @@
                     <span class="menu-label">Inmuebles</span>
                     <ul class="menu-ul">
                         <li class="menu-item" tabindex="16">
-                            <a asp-action="Index" asp-controller="Propertiy">
+                            <a asp-action="Index" asp-controller=@nameof(Property)>
                                 Ver todos
                             </a>
                         </li>
