@@ -16,7 +16,10 @@
             </div>
             <div class="action-buttons list-actions-column">
                 @* <span>Acciones</span> *@
-                <button onclick="createForm()" class="create-btn">+nuevo</button>
+                <button onclick="createForm()" class="new-btn create-btn">
+                    <img class="btn-img" src="~/images/new_person.png" alt="agregar propietario">
+                    nuevo
+                </button>
             </div>
         </li>
         @{
@@ -29,9 +32,18 @@
                         <span>@owner.ToString()</span>
                     </div>
                     <div class="action-buttons list-actions-column">
-                        <button class="list-action-button neutral-bg" onclick="showOwnerDetail('@owner.Id')">Ver</button>
-                        <button class="list-action-button edit-bg" onclick="updateForm('@owner.Id')">Editar</button>
-                        <button class="list-action-button danger-bg" onclick="confirmDelete('@owner.Id')">Eliminar</button>
+                        <button class="button list-action-button neutral-bg" onclick="showOwnerDetail('@owner.Id')">
+                            <span class="tooltip hidden">Ver detalles</span>
+                            <img class="btn-img" src="~/images/details.png" alt="ver detalles de propietario">
+                        </button>
+                        <button class="button list-action-button edit-bg" onclick="updateForm('@owner.Id')">
+                            <span class="tooltip hidden">Editar</span>
+                            <img class="btn-img" src="~/images/edit.png" alt="editar propietario">
+                        </button>
+                        <button class="button list-action-button danger-bg" onclick="confirmDelete('@owner.Id')">
+                            <span class="tooltip hidden">Eliminar</span>
+                            <img class="btn-img" src="~/images/delete.png" alt="eliminar propietario">
+                        </button>
                     </div>
                 </li>
             }

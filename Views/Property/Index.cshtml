@@ -4,6 +4,7 @@
 @{
     ViewData["Title"] = "Propiedades";
     var owners = @Html.Raw(Json.Serialize(ViewBag.owners));
+    var renters = @Html.Raw(Json.Serialize(ViewBag.renters));
     var token = antiforgery.GetAndStoreTokens(Context).RequestToken;
 }
 <section class="section">
@@ -17,7 +18,10 @@
                 <span class="prop-list-field address-field">Dirección</span>
             </div>
             <div class="action-buttons list-actions-column">
-                <button onclick="createForm()" class="create-btn">+nuevo</button>
+                <button onclick="createForm()" class="new-btn create-btn">
+                    <img class="btn-img" src="~/images/new_prop.png" alt="agregar propietario">
+                    nuevo
+                </button>
             </div>
         </li>
         @{
@@ -28,13 +32,22 @@
                         <span class="n-intern-column">#@property.Id</span>
                         <span class="prop-list-field">@property.Purpose?.Description</span>
                         <span class="prop-list-field">@property.Owner?.ToString()</span>
-                        <span class="prop-list-field">@property.Owner?.Phone?.ToString()</span>
+                        <span class="prop-list-field">@property.Owner.getContactInfo()</span>
                         <span class="prop-list-field address-field">@property.Address</span>
                     </div>
                     <div class="action-buttons list-actions-column">
-                        <button class="list-action-button neutral-bg" onclick="showPropertyDetail('@property.Id')">Ver</button>
-                        <button class="list-action-button edit-bg" onclick="updateForm('@property.Id')">Editar</button>
-                        <button class="list-action-button danger-bg" onclick="confirmDelete('@property.Id')">Eliminar</button>
+                        <button class="button list-action-button neutral-bg" onclick="showPropertyDetail('@property.Id')">
+                            <span class="tooltip hidden">Ver detalles</span>
+                            <img class="btn-img" src="~/images/details.png" alt="">
+                        </button>
+                        <button class="button list-action-button edit-bg" onclick="updateForm('@property.Id')">
+                            <span class="tooltip hidden">Editar</span>
+                            <img class="btn-img" src="~/images/edit.png" alt="">
+                        </button>
+                        <button class="button list-action-button danger-bg" onclick="confirmDelete('@property.Id')">
+                            <span class="tooltip hidden">Eliminar</span>
+                            <img class="btn-img" src="~/images/delete.png" alt="">
+                        </button>
                     </div>
                 </li>
             }
@@ -94,7 +107,7 @@
         </div>
     </form>
 
-    <form onsubmit="handleSubmit(event)" class="form-detail form-detail-props hidden">
+    <form onsubmit="handleSubmit(event)" onclick="handleGeneralFormClicks(event)" class="form-detail form-detail-props hidden">
         <h2 class="form-title form-title-props">Detalles de propiedad</h2>
         <div class="form-row">
             <label class="form-label" for="">@Html.DisplayNameFor(Props=>Props[0].Type_id)<sup>*</sup></label>
@@ -128,6 +141,45 @@
             <label class="form-label" for="">@Html.DisplayNameFor(Props=>Props[0].Owner_id)<sup>*</sup></label>
             <div class="options-div">
                 <input disabled onkeyup="handleSuggestions(event)"  onclick="addErrorWatcher(event)" onfocus="addErrorWatcher(event)" onfocusout="checkInputs()" id="owner-field-detail" name="owner" class="form-input suggestions" type="text" required>
+            </div>
+        </div>
+        <div class="details-form-actions">
+            <h2 class="new-contract-title hidden">Nuevo contrato</h2>
+            <button class="show-create-contract-btn" id="show-create-contract-button" onclick="newContractForm()">Nuevo contrato</button>
+        </div>
+        <div class="create-contract hidden">
+            <div class="form-row">
+                <label class="form-label">Inquilino</label>
+                <div class="renters-options-div">
+                    <input onkeyup="handleRentersSuggestions(event)"  onclick="addErrorWatcher(event)" onfocus="addErrorWatcher(event)" onfocusout="checkInputs()" id="renter-input" name="renter" class="form-input suggestions" type="text" required>
+                    <span class="input-error">Campo obligatorio</span>
+                    <div class="renters-options-modal hidden"></div>
+                </div>
+            </div>
+            <div class="form-row">
+                <label class="form-label">Desde</label>
+                <div class="renters-options-div">
+                    <input onkeyup="handleRentersSuggestions(event)" onchange="handleContractChange(event)"  onclick="addErrorWatcher(event)" onfocus="addErrorWatcher(event)" onfocusout="checkInputs()" id="from-input" name="from" class="form-input suggestions" type="date" required>
+                    <span class="input-error">Campo obligatorio</span>
+                </div>
+            </div>
+            <div class="form-row">
+                <label class="form-label">Hasta</label>
+                <div class="renters-options-div">
+                    <input onkeyup="handleRentersSuggestions(event)" onchange="handleContractChange(event)" onclick="addErrorWatcher(event)" onfocus="addErrorWatcher(event)" onfocusout="checkInputs()" id="until-input" name="until" class="form-input suggestions" type="date" required>
+                    <span class="input-error">Campo obligatorio</span>
+                </div>
+            </div>
+            <div class="form-row">
+                <label class="form-label">Valor mensual</label>
+                <div class="renters-options-div">
+                    <input onkeyup="handleRentersSuggestions(event)"  onclick="addErrorWatcher(event)" onfocus="addErrorWatcher(event)" onfocusout="checkInputs()" id="fee-input" name="fee" class="form-input suggestions" type="number" required>
+                    <span class="input-error">Campo obligatorio</span>
+                </div>
+            </div>
+            <div class="details-form-actions">
+                <button class="create-contract-btn" id="create-contract-button">Guardar</button>
+                <button class="cancel-contract-btn" id="cancel-contract-button" onclick="cancelNewContract()">Cancelar</button>
             </div>
         </div>
     </form>
@@ -170,8 +222,17 @@
         price: null,
         address: null,
     };
+    
+    const default_contract_body = {
+        from: null,
+        until: null,
+        renter_id: null,
+        property_id: null,
+        fee: null,
+    };
 
     let body_data = default_body;
+    let contract_body_data = default_contract_body;
 
 
     function handleSubmit(e){
@@ -191,7 +252,19 @@
         }else{
             body_data[key] = event.target.value.trim();
         }
-        console.log(body_data)
+        checkInputs();
+    }
+    
+    function handleContractChange(event){
+        const key = event.target.name;
+        
+            console.log("ACA ",event.target.value);
+            if(key == 'from'){
+                setFrom(event.target.value);
+            }else{
+                contract_body_data[key] = event.target.value.trim();
+            }
+        console.log(contract_body_data)
         checkInputs();
     }
 
@@ -202,6 +275,21 @@
             && body_data.type_id > 0
             && body_data.rooms > 0
             && body_data.price > 0
+        ){
+            document.querySelector("#send-button").removeAttribute("disabled"); 
+            document.querySelector("#send-button").classList.remove("disabled-btn");
+        }else{
+            document.querySelector("#send-button").setAttribute("disabled", "");
+            document.querySelector("#send-button").classList.add("disabled-btn");
+        }
+    }
+    
+    function checkContractInputs(){
+        if( contract_body_data.fee > 0 
+            && contract_body_data.from != null
+            && contract_body_data.until != null
+            && contract_body_data.property_id > 0
+            && contract_body_data.renter_id > 0
         ){
             document.querySelector("#send-button").removeAttribute("disabled"); 
             document.querySelector("#send-button").classList.remove("disabled-btn");
@@ -298,7 +386,6 @@
                 "RequestVerificationToken": "@token"
             }
         }).then(res=>res.json()).then(data=>{
-            console.log(data);
             setCurrentPropertyData(data)
             document.querySelector(".spinner").classList.add("hidden");
             document.querySelector(".form").classList.remove("hidden");
@@ -478,20 +565,117 @@
         }else{
             options_div.classList.add("hidden")
         }
-        console.log(body_data,  Boolean(body_data.owner_id));
         if(!body_data.owner_id)
             document.querySelector("#owner-input").classList.add('invalid');
         checkInputs();
     }
+    
+    function handleRentersSuggestions(e){
+        const keyword = document.querySelector("#renter-input").value;
+        const options_div = document.querySelector(".renters-options-modal");
+        options_div.innerHTML = '';
+        contract_body_data.renter_id = null;
+        if(keyword.trim().length > 2){
+            const matches = (@renters).filter(item=>{
+                return (item.first_name+" "+item.last_name + " " + item.dni).toLowerCase().includes(keyword.toLowerCase())
+            })
+
+            matches.forEach(match=>{
+                options_div.classList.remove("hidden")
+                const span = document.createElement('span');
+                span.id = match.id;
+                span.classList.add("option-span");
+                span.innerText = match.first_name + " " + match.last_name + " " + match.dni;
+                span.addEventListener('click', ()=>{
+                    contract_body_data.renter_id = match.id;
+                    document.querySelector("#renter-input").value = match.first_name + " " + match.last_name + " " + match.dni;
+                    document.querySelector("#renter-input").setAttribute('isvalid', true);
+                    options_div.classList.add("hidden")
+                    document.querySelector("#renter-input").classList.remove('invalid');
+                    checkInputs();
+                })
+                options_div.appendChild(span);
+            })
+        }else{
+            options_div.classList.add("hidden")
+        }
+        if(!body_data.owner_id)
+            document.querySelector("#renter-input").classList.add('invalid');
+        checkInputs();
+    }
 
     function hideSuggetions(){
-        document.querySelector(".options-modal").classList.add("hidden")
+        document.querySelector(".options-modal").classList.add("hidden");
+        document.querySelector(".renters-options-modal").classList.add("hidden");
     }
 
     function handleGeneralFormClicks(event){
         if(!event.target.classList.contains("span-option")){
             hideSuggetions()
         }
+    }
+
+    function newContractForm(){
+        contract_body_data = default_contract_body;
+        setCurrentTime();
+        document.querySelector(".create-contract").classList.remove("hidden");
+        document.querySelector(".new-contract-title").classList.remove("hidden");
+        document.querySelector("#show-create-contract-button").classList.add("hidden");
+        window.scrollTo({behavior: "smooth", top: window.innerHeight});
+    }
+    
+    function cancelNewContract(){
+        contract_body_data = default_contract_body;
+        document.querySelector(".create-contract").classList.add("hidden");
+        document.querySelector(".new-contract-title").classList.add("hidden");
+        document.querySelector("#show-create-contract-button").classList.remove("hidden");
+    }
+
+    function setCurrentTime(){
+        let date = new Date();
+
+        setFrom(date);
+    }
+
+    function setFrom(date){
+        if(typeof date + '' == 'string'){
+            const dateArray = date.split('-');
+            date = new Date(dateArray[0], dateArray[1]-1, dateArray[2]);
+        }
+
+        let day = date.getDate(),
+            month = date.getMonth() + 1,
+            year = date.getFullYear();
+
+        month = (month < 10 ? "0" : "") + month;
+        day = (day < 10 ? "0" : "") + day;
+
+        let today = year + "-" + month + "-" + day;
+
+        document.querySelector('#from-input').value = today;
+        document.querySelector('#from-input').setAttribute('min', today);
+        contract_body_data.from = today;
+        setUntil(date);
+    }
+
+    function setUntil(date){console.log(date);
+        let day = date.getDate() + 1;
+        let month = date.getMonth() + 1;
+        let year = date.getFullYear();
+
+        if((day == 29 && month == 2) || (day == 31 && month % 2 == 0) || (day == 30 && month % 2 != 0)){
+            day = 1;
+            month += 1;
+        }
+        month = (month < 10 ? "0" : "") + month;
+        day = (day < 10 ? "0" : "") + day;
+
+        let tomorrow = year + "-" + month + "-" + day;
+
+        document.querySelector('#until-input').value = tomorrow;
+        document.querySelector('#until-input').setAttribute('min', tomorrow);
+        contract_body_data.until = tomorrow;
+
     }
 
 </script>
