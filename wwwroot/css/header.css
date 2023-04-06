@@ -34,25 +34,25 @@
 .menues-div {
   display: flex;
   background: darkslategrey;
-  padding-top: 1rem;
-  align-self: flex-end;
   height: 0%;
   opacity: 1;
   /* width: 100%; */
   height: 100%;
-  padding: 1rem;
   flex: 1;
   justify-content: center;
   /* gap: 2rem; */
 }
 
 .menu-point-div {
-  /* flex: 1; */
   display: flex;
   justify-content: center;
   flex-direction: column;
   position: relative;
   width: 200px;
+}
+
+.menu-point-div:first-child {
+  margin-left: auto;
 }
 
 .menu-label {
@@ -121,7 +121,8 @@
   }
 }
 
-.logout-btn {
+.logout-btn,
+.profile-menu-btn {
   padding: 0.5rem 1rem;
   border: none;
   background-color: #fb3e3e;
@@ -133,7 +134,73 @@
   cursor: pointer;
 }
 
+.profile-menu-btn {
+  background-color: #649191;
+  color: black;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  height: 100%;
+}
+
+.profile-menu-btn > img {
+  width: 2rem;
+  height: 2rem;
+  object-fit: cover;
+}
+
 .logout-btn:hover {
   scale: 1.1;
   background-color: #f19595;
+}
+
+.user-profile-menu {
+  position: relative;
+  margin-left: auto;
+}
+
+.profile-menu-actions {
+  position: absolute;
+}
+
+.user-profile-menu:hover {
+  height: max-content;
+}
+
+.profile-menu-btn:hover + .profile-menu-actions,
+.profile-menu-actions:hover {
+  display: flex !important;
+  top: 100%;
+  background: white;
+  background: white;
+  z-index: 99999999;
+  flex-direction: column;
+  width: 100%;
+  gap: 0.5rem;
+  padding-top: 0.5rem;
+  background: white;
+}
+
+.profile-menu-item {
+  display: flex;
+  justify-content: space-around;
+  align-items: center;
+  justify-content: flex-start;
+  align-items: center;
+  padding: 0.3rem 1rem;
+  text-transform: uppercase;
+  gap: 0.5rem;
+  cursor: pointer;
+  border: none;
+  border-radius: 3px;
+}
+.profile-menu-item > .btn-img {
+  width: 1.8rem;
+  height: 1.8rem;
+  padding: 0.3rem 0.1rem;
+  object-fit: contain;
+}
+
+.profile-menu-item:hover {
+  scale: 1;
 }

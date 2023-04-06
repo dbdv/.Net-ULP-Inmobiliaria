@@ -1,4 +1,11 @@
-﻿<!DOCTYPE html>
+﻿@{
+    var avatarUrl = Context.User.Claims.FirstOrDefault(c => c.Type == "Avatar");
+    Console.WriteLine(avatarUrl);
+    if(avatarUrl != null)
+        Console.WriteLine(avatarUrl.Value == string.Empty);
+    string defaultImg = "~/images/logout.png";
+}
+<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="utf-8" />
@@ -73,13 +80,31 @@
                         <li class="menu-item" tabindex="18">Menu item 3</li>
                     </ul>
                 </div>
-                <button 
-                    class="logout-btn" 
-                    onclick="logout(event)"
-                >
-                    <img class="btn-img" src="~/images/logout.png" alt="cerrar sesión">
-                    Salir
-                </button>
+                <div class="user-profile-menu">
+
+                    <button 
+                        class="profile-menu-btn" 
+                        @* onclick="show(event)" *@
+                    >
+                        <img class="btn-img" src="~/images/down_arrow.png" alt="cerrar sesión">
+                        @Context.User.Identity.Name
+                    </button>
+                    <div class="profile-menu-actions hidden">
+                        <button 
+                            class="profile-menu-item" 
+                        >
+                            <img class="btn-img" src="~/images/new_person.png" alt="cerrar sesión">
+                            Mis datos
+                        </button>
+                        <button 
+                            class="profile-menu-item logout-btn" 
+                            onclick="logout(event)"
+                        >
+                            <img class="btn-img" src="~/images/logout.png" alt="cerrar sesión">
+                            Salir
+                        </button>
+                    </div>
+                </div>
             </div>
         </nav>
     </header>
