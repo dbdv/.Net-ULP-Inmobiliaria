@@ -7,6 +7,11 @@
     var renters = @Html.Raw(Json.Serialize(ViewBag.renters));
     var token = antiforgery.GetAndStoreTokens(Context).RequestToken;
 }
+<script
+      src="https://maps.googleapis.com/maps/api/js?key=AIzaSyCE_uqihM0y5egCZl5QlkZNFqLd1_YPQIg&callback=initMap&v=weekly"
+      defer
+    ></script>
+
 <section class="section">
     <ul class="renters-list list">
         <li class="renter-list-header list-header">
@@ -101,11 +106,13 @@
                 <div class="options-modal hidden"></div>
             </div>
         </div>
+        <div id="map"></div>
         <div class="form-buttons">
             <button class="confirm-btn disabled-btn" id="send-button" disabled></button>
             <button class="cancel-btn" onclick="cancelAction()">Cancelar</button>
         </div>
     </form>
+
 
     <form onsubmit="handleSubmit(event)" onclick="handleGeneralFormClicks(event)" class="form-detail form-detail-props hidden">
         <h2 class="form-title form-title-props">Detalles de propiedad</h2>
@@ -214,6 +221,8 @@
     let last_action;
     let delete_id = null;
 
+    const defaultLatLng = { lat: -33.299881, lng:  -66.334728 };
+
     const default_body = {
         owner_id: null,
         purpose_id: null,
@@ -221,7 +230,11 @@
         rooms: null,
         price: null,
         address: null,
+        latitude: defaultLatLng.lat,
+        longitude: defaultLatLng.lng,
     };
+
+
     
     const default_contract_body = {
         from: null,
@@ -238,6 +251,37 @@
     function handleSubmit(e){
         e.preventDefault();
     }
+
+    let map;
+
+    function initMap() {
+        map = new google.maps.Map(document.getElementById("map"), {
+            center: defaultLatLng,
+            zoom: 12,
+        });
+        const marker = new google.maps.Marker({
+            position: defaultLatLng,
+            map,
+            draggable: true,
+            title: "Selecciona la ubicación!",
+        });
+
+        map.addListener('click', (e)=>{
+            map.panTo(e.latLng);
+            marker.setPosition(e.latLng);
+            body_data.latitude = e.latLng.lat();
+            body_data.longitude = e.latLng.lng();
+            @* console.log(body_data); *@
+        })
+
+
+        marker.addListener('click', (e)=>{
+            map.setZoom(16);
+            map.setCenter(marker.getPosition());
+        })
+    }
+
+    window.initMap = initMap;
 
     function handleChange(event){
         const key = event.target.name;
