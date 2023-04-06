@@ -67,8 +67,8 @@ html {
   object-fit: contain;
 }
 
-.button:hover > .tooltip {
-  display: flex !important;
+.tooltip {
+  display: none;
   position: absolute;
   bottom: 105%;
   background: #333131cc;
@@ -79,6 +79,10 @@ html {
   left: 100%;
   color: white;
   min-width: max-content;
+}
+
+.button:hover > .tooltip {
+  display: flex !important;
 }
 
 .new-btn,
@@ -94,6 +98,10 @@ html {
 .logout-btn > img {
   width: 1.5rem;
   height: 1.5rem;
+}
+
+.hidden {
+  display: none !important;
 }
 
 html {

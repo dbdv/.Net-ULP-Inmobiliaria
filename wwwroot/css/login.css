@@ -134,13 +134,19 @@
   color: gray;
   text-decoration: none;
   cursor: pointer;
+  position: relative;
 }
 
 .link:hover {
-  scale: 1.1;
+  /* scale: 1.1; */
   transition: all 0.2s ease;
 
-  color: black;
+  /* color: black; */
+}
+
+.link:hover > .tooltip {
+  display: block !important;
+  left: 50%;
 }
 
 .link {

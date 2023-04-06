@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Inmobiliaria Bustillos | Login</title>
     <link rel="stylesheet" href="~/css/login.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
     <link rel="shortcut icon" href="~/favicon.ico" type="image/x-icon"/>
 </head>
 <body>
@@ -23,8 +24,16 @@
                 </div>
                 <button disabled class="login-button" tabindex="3" onclick="handleSubmit(event)">Ingresar</button>
                 <div class="links-box">
-                    <a href="#" class="link github-link"><img src="~/images/github-icon.png">Ingresar con GitHub</a>
-                    <a href="#" class="link pass-forgot-link"><img src="~/images/forgot-password-icon.png">Recuperar contraseña</a>
+                    <a href="#" class="link github-link">
+                        <span class="tooltip hidden">Próximamente(?</span>
+                        <img src="~/images/github-icon.png">
+                        Ingresar con GitHub
+                    </a>
+                    <a href="#" class="link pass-forgot-link">
+                        <span class="tooltip hidden">Próximamente(?</span>
+                        <img src="~/images/forgot-password-icon.png">
+                        Recuperar contraseña
+                    </a>
                 </div>
             </form>
         </section>
@@ -71,12 +80,10 @@
                     console.log("error code")
                     document.querySelector(".login-button").classList.add("login-error");
                 }
-                return res.json();
-            }).then(data=>{
-                if(data){
-                    sessionStorage.setItem("user_name", data.user_name);
-                    document.location.href = "/home";
-                }
+                if(res.redirected)
+                    window.location.href =res.url;
+            }).catch(error=>{
+                console.error(error);
             })
         }
     </script>
