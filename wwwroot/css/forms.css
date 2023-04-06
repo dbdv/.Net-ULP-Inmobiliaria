@@ -35,13 +35,12 @@
 
 .input-error {
   position: absolute;
-  bottom: -20px;
-  left: 190px;
   font-size: 0.85rem;
   color: #ea4d4d;
   display: none;
   text-transform: uppercase;
   padding-left: 1rem;
+  top: 100%;
 }
 
 .form-input,
@@ -105,52 +104,65 @@ input[type="number"] {
   margin: 0;
 }
 
-.form-buttons {
+.form-buttons,
+.details-form-actions {
   display: flex;
   width: 100%;
   justify-content: center;
   gap: 3rem;
 }
 
-.form-buttons > button {
+.form-buttons > button,
+.details-form-actions > button {
   padding: 0.1rem 0.4rem;
   border: none;
   font-size: 1.2rem;
   border: 1px solid transparent;
 }
 
-.form-buttons > button:hover {
+.form-buttons > button:hover,
+.details-form-actions > button:hover {
   cursor: pointer;
 }
 
 .form-buttons > button:hover,
-.form-buttons > button:focus-within {
+.details-form-actions > button:hover,
+.form-buttons > button:focus-within,
+.details-form-actions > button:focus-within {
   scale: 1.1;
 }
 
-.form-buttons > .confirm-btn {
+.form-buttons > .confirm-btn,
+.details-form-actions > .confirm-btn,
+.form-buttons > .create-contract-btn-btn,
+.details-form-actions > .create-contract-btn-btn {
   background: #8fbc8f;
   border-color: #67a167;
 }
 
-.form-buttons > .cancel-btn {
+.form-buttons > .cancel-btn,
+.details-form-actions > .cancel-btn {
   background: #afd3f0;
   border-color: #89c0ee;
 }
 
 .form-buttons > .disabled-btn:hover,
-.form-buttons > .disabled-btn:focus-within {
+.details-form-actions > .disabled-btn:hover,
+.form-buttons > .disabled-btn:focus-within,
+.details-form-actions > .disabled-btn:focus-within {
   scale: none;
   cursor: auto;
 }
 
-.options-div {
+.options-div,
+.renters-options-div {
   display: flex;
   flex-direction: column;
   position: relative;
 }
 
-.options-div .options-modal {
+.options-div .options-modal,
+.renters-options-div .renters-options-modal {
   display: flex;
   flex-direction: column;
   position: absolute;
@@ -166,6 +178,7 @@ input[type="number"] {
   border: 1px solid transparent;
   border-left-color: darkgray;
   border-right-color: darkgray;
+  background: white;
 }
 
 .option-span:last-child {
@@ -173,4 +186,16 @@ input[type="number"] {
 }
 .option-span:hover {
   border-color: darkgray;
+}
+
+.details-form-actions {
+  justify-content: space-around;
+}
+
+.create-contract {
+  display: flex;
+  width: 100%;
+  justify-content: center;
+  flex-direction: column;
+  gap: 2rem;
 }

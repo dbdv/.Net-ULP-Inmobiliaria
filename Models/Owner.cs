@@ -20,8 +20,13 @@ namespace testNetMVC.Models
 
         public override string ToString()
         {
-            //return $"{Apellido}, {Nombre}";
             return $"{First_name} {Last_name}";
+        }
+
+        public string getContactInfo()
+        {
+            if (Phone != null) return Phone;
+            return Email;
         }
     }
 }

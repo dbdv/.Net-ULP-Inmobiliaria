@@ -20,11 +20,13 @@ public class PropertyController : Controller
         TypeRepository type_repo = new TypeRepository();
         PurposeRepository purpose_repo = new PurposeRepository();
         OwnerRepository owner_repo = new OwnerRepository();
+        RenterRepository renter_repo = new RenterRepository();
 
         List<Property>? properties = propertyRepository.getAll();
         ViewBag.types = (List<PropType>)type_repo.getAll();
         ViewBag.purposes = (List<Purpose>)purpose_repo.getAll();
         ViewBag.owners = (List<Owner>)owner_repo.getAll();
+        ViewBag.renters = (List<Renter>)renter_repo.getAll();
 
         if (properties is null) return View("loginError");
 

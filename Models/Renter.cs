@@ -23,5 +23,11 @@ namespace testNetMVC.Models
             //return $"{Apellido}, {Nombre}";
             return $"{First_name} {Last_name}";
         }
+
+        public string getContactInfo()
+        {
+            if (Phone != null) return Phone;
+            return Email;
+        }
     }
 }
