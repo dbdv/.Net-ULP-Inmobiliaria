@@ -1,0 +1,154 @@
+@using Microsoft.AspNetCore.Antiforgery
+@inject IAntiforgery antiforgery
+@model User
+@{
+    ViewData["Title"] = "Mi perfil";
+    var token = antiforgery.GetAndStoreTokens(Context).RequestToken;
+    var defaultProfilePath = (string) ViewBag.defaultProfilePath;
+    @* var types = @Html.Raw(Json.Serialize(ViewBag.types)); *@
+}
+
+<section class="section">
+    <form class="profile-form form" action="" onsubmit="handleSubmit(event)" onkeyup="handleChange(event)">
+        <h2 class="form-title">Mis datos</h2>
+        <div>
+            <label>Email</label>
+            <input type="text" disabled value=@Model.Email>
+        </div>
+        <div class="avatar-input-container">
+            <img class="avatar-img" src="~/images/add_avatar.png" id="selected-img"/>
+            <input class="avatar-input" onchange="onSelectFile(event)" id="avatar-input" type="file">
+            <img class="remove-img hidden" src="~/images/close_icon.png" onclick="removeProfileAvatar()">
+            <span></span>
+        </div>
+        <div class="hidden">
+            <div>
+                <label>Contraseña actual</label>
+                <input type="text">
+                <span></span>
+            </div>
+            <div>
+                <label>Nueva contraseña</label>
+                <input type="text">
+                <span></span>
+            </div>
+            <div>
+                <label>Confirme la nueva contraseña</label>
+                <input type="text">
+                <span></span>
+            </div>
+        </div>
+    </form>
+</section>
+
+<script>
+
+    const defaultAvatar = "https://localhost:7164/images/add_avatar.png";
+    console.log(typeof defaultAvatar, defaultAvatar);
+
+    const defaultUserBody = {
+        email: null,
+        password: null,
+        role_id: null,
+        avatar: null,
+    }
+
+    let userBody = defaultUserBody;
+
+    function handleSubmit(e){
+        e.preventDefault();
+    }
+
+    function handleChange(e){
+        console.log(e);
+        if(e.target.name == 'role_id')
+            userBody[e.target.name] = parseInt(e.target.value);
+        else{
+            userBody[e.target.name] = e.target.value;
+        }
+        console.log(userBody);
+    }
+
+    function addErrorWatcher(event){
+        event.target.classList.add("error-watcher");
+    }
+
+    function removeErrorWatcher(){
+        document.querySelectorAll(".error-watcher").forEach(input=>{
+            input.classList.remove("error-watcher");
+        })
+    }
+
+    function showActions(){
+        document.querySelector(".actions-section").classList.remove("actions-section-hide")
+    }
+
+    function clearForm(){
+        document.querySelector("#password-input").value='';
+        document.querySelector("#email-input").value='';
+        document.querySelector("#role-input").value=null;
+        document.querySelector(".error-toast").classList.add("hidden");
+        userBody = defaultUserBody;
+        document.querySelector("#send-button").removeEventListener("click",()=>{sendUser()});
+    }
+
+    function createForm(){
+        showActions();
+        document.querySelector(".form-title").innerHTML = "Nuevo usuario";
+        document.querySelector("#send-button").innerHTML = "Agregar";
+        document.querySelector("#send-button").addEventListener("click", ()=>{sendUser()});
+        document.querySelector(".spinner").classList.add("hidden");
+        document.querySelector(".form").classList.remove("hidden");
+    }
+
+    function cancelAction(){
+        document.querySelector(".actions-section").classList.add("actions-section-hide")
+        document.querySelector(".form").classList.add("hidden");
+        document.querySelector(".confirm-delete").classList.add("hidden");
+        document.querySelector(".spinner").classList.remove("hidden");
+        clearForm();
+        removeErrorWatcher();
+    }
+
+    function showError(type, msg, effect = null){
+        document.querySelector(".spinner").classList.add("hidden");
+        document.querySelector(".error-toast").classList.remove("hidden");
+        document.querySelector(".error-type").innerHTML = type;
+        document.querySelector(".error-msg").innerHTML = msg;
+        setTimeout(()=>{
+            closeToast(effect);
+        }, 3.5 * 1000)
+    }
+
+    function closeToast(effect = null){
+        document.querySelector(".error-toast").classList.add("hidden");
+        document.querySelector(".error-type").innerHTML = '';
+        document.querySelector(".error-msg").innerHTML = '';
+        if(effect) effect();
+    }
+
+    function confirmDelete(id){
+        document.querySelector(".spinner").classList.add("hidden");
+        document.querySelector(".confirm-delete").classList.remove("hidden");
+        document.querySelector(".delete-btn").addEventListener("click", ()=>{
+            document.querySelector(".spinner").classList.remove("hidden");
+            document.querySelector(".confirm-delete").classList.add("hidden");
+            deleteUser(id);
+        })
+        showActions();
+    }
+
+    function onSelectFile(e){
+        userBody.avatar = e.target.value;
+        document.querySelector("#selected-img").setAttribute("src", URL.createObjectURL(e.target.files[0]));
+        document.querySelector(".remove-img").classList.remove("hidden");
+    }
+
+    function removeProfileAvatar(){
+        console.log("aca", typeof defaultAvatar)
+        document.querySelector('#avatar-input').value = '';
+        document.querySelector(".remove-img").classList.add("hidden");
+        document.querySelector("#selected-img").setAttribute("src", defaultAvatar);
+    }
+
+</script>

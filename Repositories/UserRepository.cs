@@ -47,7 +47,7 @@ namespace testNetMVC.Repositories
                                 // Avatar = reader["avatar"].ToString() ?? null,
                                 Email = reader["email"].ToString(),
                                 Password = reader["password"].ToString(),
-                                RoleId = Convert.ToInt32(reader["role_id"]),
+                                Role_id = Convert.ToInt32(reader["role_id"]),
                                 Role = new Role
                                 {
                                     Id = Convert.ToInt32(reader["role_id"]),
@@ -82,10 +82,10 @@ namespace testNetMVC.Repositories
                 using (MySqlConnection connection = new MySqlConnection(_connecString))
                 {
                     string sql = @"
-                    SELECT email, password, avatar, role_id, label
+                    SELECT users.id id, email, password, avatar, role_id, label
                     FROM users
                     JOIN roles ON roles.id = role_id
-                    WHERE id=@id;";
+                    WHERE users.id=@id;";
                     using (MySqlCommand command = new MySqlCommand(sql, connection))
                     {
 
@@ -105,7 +105,7 @@ namespace testNetMVC.Repositories
                                 Avatar = reader["avatar"].ToString(),
                                 Email = reader["email"].ToString(),
                                 Password = reader["password"].ToString(),
-                                RoleId = Convert.ToInt32(reader["role_id"]),
+                                Role_id = Convert.ToInt32(reader["role_id"]),
                                 Role = new Role
                                 {
                                     Id = Convert.ToInt32(reader["role_id"]),
@@ -136,7 +136,7 @@ namespace testNetMVC.Repositories
                 using (MySqlConnection connection = new MySqlConnection(_connecString))
                 {
                     string sql = @"
-                    SELECT email, password, avatar, role_id, label
+                    SELECT users.id id, email, password, avatar, role_id, label
                     FROM users
                     JOIN roles ON roles.id = role_id;";
                     using (MySqlCommand command = new MySqlCommand(sql, connection))
@@ -152,7 +152,7 @@ namespace testNetMVC.Repositories
                                 Avatar = reader["avatar"].ToString(),
                                 Email = reader["email"].ToString(),
                                 Password = reader["password"].ToString(),
-                                RoleId = Convert.ToInt32(reader["role_id"]),
+                                Role_id = Convert.ToInt32(reader["role_id"]),
                                 Role = new Role
                                 {
                                     Id = Convert.ToInt32(reader["role_id"]),
@@ -173,6 +173,46 @@ namespace testNetMVC.Repositories
             }
 
             return users;
+        }
+
+        public List<Role>? getRoles()
+        {
+            List<Role>? roles = new List<Role> { };
+            Console.WriteLine("---Retriving all roles");
+
+            try
+            {
+                using (MySqlConnection connection = new MySqlConnection(_connecString))
+                {
+                    string sql = @"
+                    SELECT id, label
+                    FROM roles";
+                    using (MySqlCommand command = new MySqlCommand(sql, connection))
+                    {
+                        command.CommandType = System.Data.CommandType.Text;
+                        connection.Open();
+                        var reader = command.ExecuteReader();
+                        while (reader.Read())
+                        {
+                            var role = new Role
+                            {
+                                Id = Convert.ToInt32(reader["id"]),
+                                Label = reader["label"].ToString(),
+                            };
+
+                            roles.Add(role);
+                        }
+                        connection.Close();
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("---Error retriving all roles " + ex);
+                return null;
+            }
+
+            return roles;
         }
 
         public int create(User user)
@@ -197,7 +237,7 @@ namespace testNetMVC.Repositories
                         command.Parameters.AddWithValue("@email", user.Email);
                         command.Parameters.AddWithValue("@password", user.Password);
                         command.Parameters.AddWithValue("@avatar", user.Avatar);
-                        command.Parameters.AddWithValue("@role_id", user.RoleId);
+                        command.Parameters.AddWithValue("@role_id", user.Role_id);
                         connection.Open();
                         id = Convert.ToInt32(command.ExecuteScalar());
                         connection.Close();
@@ -258,7 +298,7 @@ namespace testNetMVC.Repositories
                         command.Parameters.AddWithValue("@email", user.Email);
                         command.Parameters.AddWithValue("@password", user.Password);
                         command.Parameters.AddWithValue("@avatar", user.Avatar);
-                        command.Parameters.AddWithValue("@role_id", user.RoleId);
+                        command.Parameters.AddWithValue("@role_id", user.Role_id);
                         connection.Open();
                         result = Convert.ToInt32(command.ExecuteNonQuery());
                         connection.Close();

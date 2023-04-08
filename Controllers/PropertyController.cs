@@ -1,9 +1,11 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using testNetMVC.Models;
 using testNetMVC.Repositories;
+using Microsoft.AspNetCore.Authorization;
 
 namespace testNetMVC.Controllers;
 
+[Authorize]
 public class PropertyController : Controller
 {
     private readonly ILogger<PropertyController> _logger;

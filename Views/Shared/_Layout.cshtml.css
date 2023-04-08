@@ -8,3 +8,9 @@
   flex: 1;
   position: relative;
 }
+
+.tempMsg {
+  width: 100%;
+  padding: 1rem;
+  background-color: rgb(131, 240, 131);
+}
