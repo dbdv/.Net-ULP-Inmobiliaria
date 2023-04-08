@@ -1,0 +1,27 @@
+.avatar-input-container {
+  position: relative;
+  width: fit-content;
+  height: fit-content;
+}
+
+.avatar-img {
+  width: 200px;
+  height: 200px;
+  object-fit: cover;
+}
+
+.avatar-input {
+  cursor: pointer;
+  position: absolute;
+  opacity: 0;
+  inset: 0;
+  width: 200px;
+  height: 200px;
+}
+
+.remove-img {
+  position: absolute;
+  bottom: 85%;
+  left: 90%;
+  cursor: pointer;
+}

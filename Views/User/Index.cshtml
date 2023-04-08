@@ -1,0 +1,221 @@
+@using Microsoft.AspNetCore.Antiforgery
+@inject IAntiforgery antiforgery
+@{
+    ViewData["Title"] = "Panel de administrador";
+    var token = antiforgery.GetAndStoreTokens(Context).RequestToken;
+    @* var types = @Html.Raw(Json.Serialize(ViewBag.types)); *@
+}
+
+<section class="section">
+    <ul class="users-list list">
+        <li class="user-list-header list-header">
+            <div class="list-colum">
+                <span id="n-intern-header" class="n-intern-column">N° interno</span>
+                <span class="email-column">Email</span>
+                <span>Rol</span>
+            </div>
+            <div class="action-buttons list-actions-column">
+                @* <span>Acciones</span> *@
+                <button onclick="createForm()" class="new-btn create-btn">
+                    <img class="btn-img" src="~/images/new_person.png" alt="agregar inquilino">
+                    nuevo
+                </button>
+            </div>
+        </li>
+        @{
+            foreach (var user in (List<User>) ViewBag.users)
+            {
+                <li class="user-row list-row">
+                    <div class="list-colum">
+                        <span class="n-intern-column">#@user.Id</span>
+                        <span class="email-column">@user.ToString()</span>
+                        <span>@user.Role.getRole()</span>
+                    </div>
+                    <div class="action-buttons list-actions-column">
+                        @* <button class="button list-action-button neutral-bg" onclick="showOwnerDetail('@user.Id')">
+                            <span class="tooltip hidden">Ver detalles</span>
+                            <img class="btn-img" src="~/images/details.png" alt="ver detalles de inquilino">
+                        </button> *@
+                        <button class="button list-action-button danger-bg" onclick="confirmDelete('@user.Id')">
+                            <span class="tooltip hidden">Eliminar</span>
+                            <img class="btn-img" src="~/images/delete.png" alt="eliminar inquilino">
+                        </button>
+                    </div>
+                </li>
+            }
+        }
+    </ul>
+</section>
+
+<section class="actions-section actions-section-hide section">
+    <form class="form hidden" action="" onsubmit="handleSubmit(event)" onkeyup="handleChange(event)">
+        <h2 class="form-title">title</h2>
+        <div class="form-row">
+            <label class="form-label" for="">Email</label>
+            <input class="form-input" name="email" type="text" id="email-input" onfocus="addErrorWatcher(event)">
+            <span class="input-error">Campo obligatorio</span>
+        </div>
+        <div class="form-row">
+            <label class="form-label" for="">Contraseña</label>
+            <input class="form-input" name="password" type="text" id="password-input" onfocus="addErrorWatcher(event)">
+            <span class="input-error">Campo obligatorio</span>
+        </div>
+        <div class="form-row">
+            <label class="form-label" for="">Rol</label>
+            <select class="form-input" name="role_id" id="role-input" onchange="handleChange(event)" onfocus="addErrorWatcher(event)">
+                <option value="null">--Selecciona un rol--</option>
+                @foreach (var role in (List<Role>) ViewBag.roles)
+                {
+                    <option value=@role.Id>@role.getRole()</option>
+                }
+            </select>
+            <span class="input-error">Campo obligatorio</span>
+        </div>
+        <div class="form-buttons">
+            <button class="confirm-btn disabled-btn" id="send-button" disabled></button>
+            <button class="cancel-btn" onclick="cancelAction()">Cancelar</button>
+        </div>
+    </form>
+
+    <div class="confirm-delete confirm-dialog hidden">
+        <span>Está seguro que desea eliminar?</span>
+        <div class="buttons">
+            <button class="delete-btn">Eliminar</button>
+            <button class="cancel-btn" onclick="cancelAction()">Cancelar</button>
+        </div>
+    </div>
+
+    <div class="spinner"></div>
+
+    <div class="toast error-toast hidden">
+        <span class="toast-title error-type"></span>
+        <span class="toast-info error-msg"></span>
+    </div>
+</section>
+
+<script>
+
+    const defaultUserBody = {
+        email: null,
+        password: null,
+        role_id: null,
+    }
+
+    let userBody = defaultUserBody;
+
+    function handleSubmit(e){
+        e.preventDefault();
+    }
+
+    function handleChange(e){
+        console.log(e);
+        if(e.target.name == 'role_id')
+            userBody[e.target.name] = parseInt(e.target.value);
+        else{
+            userBody[e.target.name] = e.target.value;
+        }
+        console.log(userBody);
+    }
+
+    function sendUser(){
+        fetch(`${base_url}users`, {
+            method: 'POST',
+            body: JSON.stringify(userBody),
+            headers:{
+                'Content-Type': 'application/json',
+                "RequestVerificationToken": "@token",
+            }
+        }).then(res=>{
+            if(res.status != 200)
+                    @* showError("Error", "No se pudo crear el usuario, intenta nuevamente."); *@
+                if(res.redirected)
+                    window.location.href =res.url;
+        }).catch(e=>console.error(e));    
+    }
+    
+    function deleteUser(id){
+        fetch(`${base_url}users/${id}`, {
+            method: 'DELETE',
+            headers:{
+                'Content-Type': 'application/json',
+                "RequestVerificationToken": "@token",
+            }
+        }).then(res=>{
+            if(res.status != 200){
+                showError("Error", "No se pudo crear el usuario, intenta nuevamente.", ()=>{document.querySelector(".confirm-delete").classList.remove("hidden");});
+            }
+            if(res.redirected)
+                window.location.href =res.url;
+        }).catch(e=>console.error(e));    
+    }
+
+    function addErrorWatcher(event){
+        event.target.classList.add("error-watcher");
+    }
+
+    function removeErrorWatcher(){
+        document.querySelectorAll(".error-watcher").forEach(input=>{
+            input.classList.remove("error-watcher");
+        })
+    }
+
+    function showActions(){
+        document.querySelector(".actions-section").classList.remove("actions-section-hide")
+    }
+
+    function clearForm(){
+        document.querySelector("#password-input").value='';
+        document.querySelector("#email-input").value='';
+        document.querySelector("#role-input").value=null;
+        document.querySelector(".error-toast").classList.add("hidden");
+        userBody = defaultUserBody;
+        document.querySelector("#send-button").removeEventListener("click",()=>{sendUser()});
+    }
+
+    function createForm(){
+        showActions();
+        document.querySelector(".form-title").innerHTML = "Nuevo usuario";
+        document.querySelector("#send-button").innerHTML = "Agregar";
+        document.querySelector("#send-button").addEventListener("click", ()=>{sendUser()});
+        document.querySelector(".spinner").classList.add("hidden");
+        document.querySelector(".form").classList.remove("hidden");
+    }
+
+    function cancelAction(){
+        document.querySelector(".actions-section").classList.add("actions-section-hide")
+        document.querySelector(".form").classList.add("hidden");
+        document.querySelector(".confirm-delete").classList.add("hidden");
+        document.querySelector(".spinner").classList.remove("hidden");
+        clearForm();
+        removeErrorWatcher();
+    }
+
+    function showError(type, msg, effect = null){
+        document.querySelector(".spinner").classList.add("hidden");
+        document.querySelector(".error-toast").classList.remove("hidden");
+        document.querySelector(".error-type").innerHTML = type;
+        document.querySelector(".error-msg").innerHTML = msg;
+        setTimeout(()=>{
+            closeToast(effect);
+        }, 3.5 * 1000)
+    }
+
+    function closeToast(effect = null){
+        document.querySelector(".error-toast").classList.add("hidden");
+        document.querySelector(".error-type").innerHTML = '';
+        document.querySelector(".error-msg").innerHTML = '';
+        if(effect) effect();
+    }
+
+    function confirmDelete(id){
+        document.querySelector(".spinner").classList.add("hidden");
+        document.querySelector(".confirm-delete").classList.remove("hidden");
+        document.querySelector(".delete-btn").addEventListener("click", ()=>{
+            document.querySelector(".spinner").classList.remove("hidden");
+            document.querySelector(".confirm-delete").classList.add("hidden");
+            deleteUser(id);
+        })
+        showActions();
+    }
+
+</script>

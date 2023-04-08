@@ -40,7 +40,7 @@
   height: 100%;
   flex: 1;
   justify-content: center;
-  /* gap: 2rem; */
+  gap: 4rem;
 }
 
 .menu-point-div {
@@ -48,7 +48,7 @@
   justify-content: center;
   flex-direction: column;
   position: relative;
-  width: 200px;
+  width: max-content;
 }
 
 .menu-point-div:first-child {
@@ -95,8 +95,11 @@
   z-index: 999;
 }
 
+.menu-item {
+  width: max-content;
+}
+
 .menu-item > a {
-  width: 130px;
   color: #dddada;
   transition: all 0.15s ease-in-out;
   text-decoration: none;
@@ -117,7 +120,6 @@
 @media (max-width: 1200px) {
   .menu-point-div {
     padding-left: 0.5rem;
-    width: 150px;
   }
 }
 

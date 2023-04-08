@@ -11,10 +11,22 @@ builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationSc
         options.LoginPath = "/";
         options.LogoutPath = "/Logout";
         options.AccessDeniedPath = "/Home";
+        options.Events = new CookieAuthenticationEvents
+        {
+            OnRedirectToAccessDenied = context =>
+            {
+                context.Response.StatusCode = 403;
+                return Task.CompletedTask;
+            }
+        };
         //options.ExpireTimeSpan = TimeSpan.FromMinutes(5);//Tiempo de expiración
     });
 
-
+builder.Services.AddAuthorization(options =>
+{
+    //options.AddPolicy("Empleado", policy => policy.RequireClaim(ClaimTypes.Role, "Administrador", "Empleado"));
+    options.AddPolicy("admin", policy => policy.RequireRole("admin"));
+});
 
 var app = builder.Build();
 

@@ -60,6 +60,10 @@
   text-align: left;
 }
 
+.email-column {
+  width: 175px;
+}
+
 .prop-list-field {
   width: 120px;
   overflow: hidden;

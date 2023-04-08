@@ -29,12 +29,6 @@ public class HomeController : Controller
 
         return View();
     }
-    [Authorize]
-    [Route("/home")]
-    public IActionResult Home()
-    {
-        return View("Home");
-    }
     [HttpPost]
     [Route("/login")]
     public async Task<IActionResult> Login([FromBody] UserBody userBody)
@@ -64,6 +58,7 @@ public class HomeController : Controller
                             {
                                 new Claim(ClaimTypes.Name, dbUser.Email),
                                 new Claim(ClaimTypes.Role, dbUser.Role.Label),
+                                new Claim(type: "UserId", value: dbUser.Id.ToString()),
                             };
 
         var claimsIdentity = new ClaimsIdentity(claims, CookieAuthenticationDefaults.AuthenticationScheme);
@@ -80,6 +75,12 @@ public class HomeController : Controller
     {
         await HttpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
         return Redirect("/");
+    }
+    [Authorize]
+    [Route("/home")]
+    public IActionResult Home()
+    {
+        return View("Home");
     }
 
     [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]

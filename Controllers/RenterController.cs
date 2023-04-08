@@ -1,10 +1,11 @@
-﻿using System.Diagnostics;
-using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Mvc;
 using testNetMVC.Models;
 using testNetMVC.Repositories;
+using Microsoft.AspNetCore.Authorization;
 
 namespace testNetMVC.Controllers;
 
+[Authorize]
 public class RenterController : Controller
 {
     private readonly ILogger<RenterController> _logger;
@@ -78,9 +79,9 @@ public class RenterController : Controller
     }
 
     [HttpGet]
-    [Route("Renter/get")]
+    [Route("Renter/get/{id}")]
     // [ValidateAntiForgeryToken]
-    public IActionResult Get([FromQuery] int id)
+    public IActionResult Get(int id)
     {
         if (id < 1)
             return Problem("ID inválido.", statusCode: 400);
@@ -93,9 +94,9 @@ public class RenterController : Controller
     }
 
     [HttpDelete]
-    [Route("Renter/delete")]
+    [Route("Renter/delete/{id}")]
     // [ValidateAntiForgeryToken]
-    public IActionResult Delete([FromQuery] int id)
+    public IActionResult Delete(int id)
     {
         if (id < 1)
             return BadRequest("ID inválido.");

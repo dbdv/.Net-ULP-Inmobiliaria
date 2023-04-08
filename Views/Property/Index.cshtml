@@ -216,7 +216,7 @@
         }
     });
 
-    const base_url = "https://localhost:7164/Property/";
+    @* const base_url = "https://localhost:7164/Property/"; *@
 
     let last_action;
     let delete_id = null;
@@ -391,7 +391,7 @@
         document.querySelector(".spinner").classList.remove("hidden");
         
         if(id !== null){
-            fetch(`${base_url}${id}`, {
+            fetch(`${base_url}Property/${id}`, {
                 method: "DELETE",
                 headers:{
                     "Content-Type": "application/json",
@@ -425,7 +425,7 @@
         last_action = 'update';
         showActions();
 
-        fetch(`${base_url}${parseInt(prop_id)}`, {
+        fetch(`${base_url}Property/${parseInt(prop_id)}`, {
             headers:{
                 "RequestVerificationToken": "@token"
             }
@@ -464,7 +464,7 @@
         
         showActions();
 
-        fetch(`${base_url}${parseInt(id)}`, {
+        fetch(`${base_url}Property/${parseInt(id)}`, {
             headers:{
                 "RequestVerificationToken": "@token"
             }
@@ -504,7 +504,7 @@
         document.querySelector(".form").classList.add("hidden");
         document.querySelector(".spinner").classList.remove("hidden");
 
-        fetch(`${base_url}`, {
+        fetch(`${base_url}Property`, {
                 method: "POST",
                 headers:{
                     "Content-Type": "application/json",
@@ -529,7 +529,7 @@
         document.querySelector(".form").classList.add("hidden");
         document.querySelector(".spinner").classList.remove("hidden");
 
-        fetch(`${base_url}update`, {
+        fetch(`${base_url}Property/update`, {
                 method: "PUT",
                 headers:{
                     "Content-Type": "application/json",

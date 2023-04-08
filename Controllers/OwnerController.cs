@@ -2,9 +2,11 @@
 using Microsoft.AspNetCore.Mvc;
 using testNetMVC.Models;
 using testNetMVC.Repositories;
+using Microsoft.AspNetCore.Authorization;
 
 namespace testNetMVC.Controllers;
 
+[Authorize]
 public class OwnerController : Controller
 {
     private readonly ILogger<OwnerController> _logger;
@@ -78,9 +80,9 @@ public class OwnerController : Controller
     }
 
     [HttpGet]
-    [Route(nameof(Owner) + "/get")]
+    [Route("Owner/{id}")]
     // [ValidateAntiForgeryToken]
-    public IActionResult Get([FromQuery] int id)
+    public IActionResult Get(int id)
     {
         if (id < 1)
             return Problem("ID inválido.", statusCode: 400);

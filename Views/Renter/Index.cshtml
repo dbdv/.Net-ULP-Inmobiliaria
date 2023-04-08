@@ -133,7 +133,7 @@
         }
     });
 
-    const base_url = "https://localhost:7164/Renter/";
+    @* const base_url = "https://localhost:7164/Renter/"; *@
 
     let last_action;
     let delete_id = null;
@@ -221,7 +221,7 @@
         document.querySelector(".spinner").classList.remove("hidden");
         
         if(id !== null){
-            fetch(`${base_url}delete?id=${id}`, {
+            fetch(`${base_url}Renter/delete?id=${id}`, {
                 method: "DELETE",
                 headers:{
                     "Content-Type": "application/json",
@@ -255,7 +255,7 @@
         last_action = 'update';
         showActions();
 
-        fetch(`${base_url}get?id=${parseInt(renter_id)}`, {
+        fetch(`${base_url}Renter/${parseInt(renter_id)}`, {
             headers:{
                 "RequestVerificationToken": "@token"
             }
@@ -294,7 +294,7 @@
         
         showActions();
 
-        fetch(`${base_url}get?id=${parseInt(id)}`, {
+        fetch(`${base_url}Renter/${parseInt(id)}`, {
             headers:{
                 "RequestVerificationToken": "@token"
             }
@@ -339,7 +339,7 @@
         document.querySelector(".form").classList.add("hidden");
         document.querySelector(".spinner").classList.remove("hidden");
 
-        fetch(`${base_url}new`, {
+        fetch(`${base_url}Renter/new`, {
                 method: "POST",
                 headers:{
                     "Content-Type": "application/json",
@@ -364,7 +364,7 @@
         document.querySelector(".form").classList.add("hidden");
         document.querySelector(".spinner").classList.remove("hidden");
 
-        fetch(`${base_url}update`, {
+        fetch(`${base_url}Renter/update`, {
                 method: "PUT",
                 headers:{
                     "Content-Type": "application/json",
