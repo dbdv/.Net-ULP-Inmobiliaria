@@ -69,9 +69,9 @@ public class HomeController : Controller
         return Redirect("/home");
     }
 
-    [HttpPost]
+    [HttpGet]
     [Route("/logout")]
-    public async Task<IActionResult> Logou()
+    public async Task<IActionResult> Logout()
     {
         await HttpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
         return Redirect("/");

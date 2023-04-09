@@ -79,7 +79,7 @@ public class RenterController : Controller
     }
 
     [HttpGet]
-    [Route("Renter/get/{id}")]
+    [Route("Renter/{id}")]
     // [ValidateAntiForgeryToken]
     public IActionResult Get(int id)
     {

@@ -4,6 +4,9 @@ using testNetMVC.Repositories;
 using Microsoft.AspNetCore.Cryptography.KeyDerivation;
 using Microsoft.AspNetCore.Authorization;
 using System.Security.Claims;
+using System;
+using System.Web;
+using System.Web;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authentication;
 
@@ -22,6 +25,7 @@ public class UserController : Controller
     }
 
     [Authorize(Policy = "admin")]
+    [Route("users-managment")]
     public IActionResult Index()
     {
         ViewBag.users = (List<User>)userRepo.getAll();
@@ -67,6 +71,72 @@ public class UserController : Controller
     }
 
     [HttpPost]
+    [Authorize]
+    [Route("users/update")]
+    public IActionResult updateUser(UpdateUserBody user)
+    {
+        int userId = Convert.ToInt32(User.FindFirstValue("UserId"));
+        user.Id = userId;
+        var currentUserData = userRepo.get(userId);
+
+        if (user.CurrentPassword != null
+            && user.NewPassword != null
+            )
+        {
+            var hashedPass = Models.User.getHashPassword(user.CurrentPassword);
+            var passToMatch = currentUserData.Password;
+            if (hashedPass != passToMatch)
+                return BadRequest("PAsa por aca");
+        }
+
+        if (user.NewPassword == null)
+            user.NewPassword = currentUserData.Password;
+
+        if (user.Avatar != null)
+        {
+            string path = System.IO.Path.Combine("", "./wwwroot/uploads/");
+            if (!Directory.Exists(path))
+            {
+                Directory.CreateDirectory(path);
+            }
+            string fileName = "avatar_" + userId + Path.GetExtension(user.Avatar.FileName);
+            string fullPath = Path.Combine(path, fileName);
+            user.AvatarUrl = fileName;
+            using (FileStream stream = new FileStream(fullPath, FileMode.Create))
+            {
+                user.Avatar.CopyTo(stream);
+            }
+        }
+
+        if (user.AvatarUrl == null)
+        {
+            string fullPath = Path.Combine("./wwwroot/uploads/", currentUserData.Avatar);
+            if (System.IO.File.Exists(fullPath))
+            {
+                Console.WriteLine("existe");
+                System.IO.File.Delete(fullPath);
+            }
+            else
+            {
+                Console.WriteLine("no existe");
+            }
+            Console.WriteLine("esta adentro de avatarURl empty");
+            user.Avatar = null;
+            user.AvatarUrl = null;
+        }
+        Console.WriteLine("esta fuera de avatarURl empty");
+        Console.WriteLine(user.AvatarUrl);
+        Console.WriteLine(user.AvatarUrl == string.Empty);
+
+        int updated = userRepo.update(user);
+        if (updated == -1)
+            return Error();
+
+        TempData["ProcessMsg"] = accionsTempMsgs["created"];
+        return Redirect("/profile");
+    }
+
+    [HttpPost]
     [Authorize(Policy = "admin")]
     [Route("users/{id}")]
     public IActionResult deleteUser(int id)
@@ -79,7 +149,7 @@ public class UserController : Controller
         if (deleted == -1)
             return Error();
 
-        return Redirect("/admin");
+        return Redirect("/users-managment");
     }
 
     [Route("Profile")]

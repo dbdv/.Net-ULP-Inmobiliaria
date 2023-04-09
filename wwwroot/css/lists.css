@@ -85,11 +85,11 @@
   gap: 2rem;
 }
 
-.list-colum > span {
+.list-colum>span {
   padding: 0.2rem 0.5rem;
 }
 
-.list-header > .list-colum > span {
+.list-header>.list-colum>span {
   font-weight: 500;
 }
 
@@ -116,14 +116,38 @@
 
 .primary-bg {
   background: darkseagreen;
+  background: transparent;
+}
+
+.primary-bg:hover>img {
+  filter: grayscale(0);
+  filter: hue-rotate(100deg);
+  -webkit-filter: hue-rotate(100deg);
 }
 
 .danger-bg {
   background: #ee5977;
+  background: transparent;
+}
+
+.danger-bg:hover>img {
+  filter: hue-rotate(0deg);
 }
 
 .edit-bg {
   background: #f2ba7e;
+  background: transparent;
+}
+
+.details-bg {
+  background: #f2ba7e;
+  background: transparent;
+}
+
+.details-bg:hover>img {
+  filter: grayscale(0);
+  filter: hue-rotate(115deg);
+  -webkit-filter: hue-rotate(115deg);
 }
 
 .actions-section {

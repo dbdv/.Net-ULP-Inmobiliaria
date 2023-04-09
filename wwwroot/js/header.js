@@ -19,3 +19,7 @@ function logout() {
       console.error(error);
     });
 }
+
+function closeTempMsg() {
+  document.querySelector(".tempMsg").classList.add("hidden");
+}

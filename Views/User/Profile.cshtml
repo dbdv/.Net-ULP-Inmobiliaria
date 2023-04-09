@@ -4,7 +4,7 @@
 @{
     ViewData["Title"] = "Mi perfil";
     var token = antiforgery.GetAndStoreTokens(Context).RequestToken;
-    var defaultProfilePath = (string) ViewBag.defaultProfilePath;
+    var defaultProfilePath = (string)ViewBag.defaultProfilePath;
     @* var types = @Html.Raw(Json.Serialize(ViewBag.types)); *@
 }
 
@@ -13,30 +13,44 @@
         <h2 class="form-title">Mis datos</h2>
         <div>
             <label>Email</label>
-            <input type="text" disabled value=@Model.Email>
+            <input disabled type="text" class="disabled" value=@Model.Email>
         </div>
         <div class="avatar-input-container">
-            <img class="avatar-img" src="~/images/add_avatar.png" id="selected-img"/>
-            <input class="avatar-input" onchange="onSelectFile(event)" id="avatar-input" type="file">
+            @{
+                @if (Model.Avatar != null)
+                {
+                    <img class="avatar-img" src=@($"/uploads/{@Model.Avatar}") id="selected-img"/>
+                }
+                else
+                {
+                    <img class="avatar-img" src="~/images/add_avatar.png" id="selected-img"/>
+                }
+            }
+            <input disabled class="avatar-input disabled hidden" onchange="onSelectFile(event)" id="avatar-input" type="file">
             <img class="remove-img hidden" src="~/images/close_icon.png" onclick="removeProfileAvatar()">
             <span></span>
         </div>
-        <div class="hidden">
+        <div class="password-edit hidden">
             <div>
                 <label>Contraseña actual</label>
-                <input type="text">
+                <input id="current-pass" disabled type="text">
                 <span></span>
             </div>
             <div>
                 <label>Nueva contraseña</label>
-                <input type="text">
+                <input id="new-pass" disabled type="text">
                 <span></span>
             </div>
             <div>
                 <label>Confirme la nueva contraseña</label>
-                <input type="text">
+                <input id="repeat-new-pass" disabled type="text">
                 <span></span>
             </div>
+        </div>
+        <div class="action-buttons">
+            <button id="edit-btn" onclick="showEditData()">Editar</button>
+            <button id="update-btn" class="hidden" onclick="sendUpdate()" disabled>Actualizar</button>
+            <button id="cancel-btn" class="hidden" onclick="cancelUpdate()">Cancelar</button>
         </div>
     </form>
 </section>
@@ -44,13 +58,13 @@
 <script>
 
     const defaultAvatar = "https://localhost:7164/images/add_avatar.png";
-    console.log(typeof defaultAvatar, defaultAvatar);
+    let formData = new FormData();
 
     const defaultUserBody = {
-        email: null,
-        password: null,
-        role_id: null,
+        newPassword: null,
+        currentPassword: null,
         avatar: null,
+        avatarUrl: '@Model.Avatar'.length > 0 ? '@Model.Avatar' : null,
     }
 
     let userBody = defaultUserBody;
@@ -67,6 +81,18 @@
             userBody[e.target.name] = e.target.value;
         }
         console.log(userBody);
+        checkInputs();
+    }
+
+    function checkInputs(){
+        if(
+            (userBody.currentPassword != null && userBody.newPassword != null) 
+            || userBody.avatar != null 
+            || (userBody.avatarUrl != null && userBody.avatarUrl.length == 0)
+        )
+            document.querySelector("#update-btn").removeAttribute('disabled');
+        else
+            document.querySelector("#update-btn").setAttribute('disabled', true);
     }
 
     function addErrorWatcher(event){
@@ -141,14 +167,63 @@
     function onSelectFile(e){
         userBody.avatar = e.target.value;
         document.querySelector("#selected-img").setAttribute("src", URL.createObjectURL(e.target.files[0]));
+        formData.append('avatar', e.target.files[0]);
         document.querySelector(".remove-img").classList.remove("hidden");
+        checkInputs();
     }
 
     function removeProfileAvatar(){
-        console.log("aca", typeof defaultAvatar)
         document.querySelector('#avatar-input').value = '';
         document.querySelector(".remove-img").classList.add("hidden");
         document.querySelector("#selected-img").setAttribute("src", defaultAvatar);
+        formData.append('avatar', '');
+        userBody.avatarUrl = '';
+        formData.append('avatarUrl', userBody.avatarUrl);
+        checkInputs();
+    }
+
+    function sendUpdate(){
+        if(userBody.newPassword){
+            formData.append('newPassword', userBody.newPassword);
+            formData.append('currentPassword', userBody.currentPassword);
+        }
+        console.log(formData);
+        fetch(`${base_url}users/update`, {
+            method: 'POST',
+            body: formData
+        }).then(res=>{
+            if(res.redirected)
+                window.location.href =res.url;
+        })
+    }
+
+    function showEditData(){
+        document.querySelector("#edit-btn").classList.add("hidden");
+        document.querySelector("#update-btn").classList.remove("hidden");
+        document.querySelector("#cancel-btn").classList.remove("hidden");
+        document.querySelector(".remove-img").classList.remove("hidden");
+        document.querySelector(".password-edit").classList.remove("hidden");
+
+        document.querySelector("#avatar-input").removeAttribute('disabled');
+        document.querySelector("#current-pass").removeAttribute('disabled');
+        document.querySelector("#new-pass").removeAttribute('disabled');
+        document.querySelector("#repeat-new-pass").removeAttribute('disabled');
+        document.querySelector("#avatar-input").classList.remove('hidden');
+    }
+
+    function cancelUpdate(){
+        document.querySelector("#edit-btn").classList.remove("hidden");
+        document.querySelector("#update-btn").classList.add("hidden");
+        document.querySelector("#cancel-btn").classList.add("hidden");
+        document.querySelector(".remove-img").classList.add("hidden");
+        document.querySelector("#avatar-input").setAttribute('disabled', true);
+        document.querySelector("#current-pass").setAttribute('disabled', true);
+        document.querySelector("#new-pass").setAttribute('disabled', true);
+        document.querySelector("#repeat-new-pass").setAttribute('disabled', true);
+        document.querySelector("#avatar-input").classList.add('hidden');
+        document.querySelector(".password-edit").classList.add("hidden");
+        userBody = defaultUserBody;
+        formData = new FormData();
     }
 
 </script>

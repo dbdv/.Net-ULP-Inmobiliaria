@@ -57,8 +57,8 @@ namespace testNetMVC.Repositories
                                 Address = reader["address"].ToString(),
                                 Rooms = Convert.ToInt32(reader["rooms"]),
                                 Price = Convert.ToDouble(reader["price"]),
-                                // Latitude = Convert.ToDouble(reader["latitude"]),
-                                // Longitude = Convert.ToDouble(reader["longitude"]),
+                                Latitude = reader["latitude"] != DBNull.Value ? Convert.ToDouble(reader["latitude"]) : null,
+                                Longitude = reader["longitude"] != DBNull.Value ? Convert.ToDouble(reader["longitude"]) : null,
                                 Owner_id = Convert.ToInt32(reader["owner_id"].ToString()),
                                 Owner = new Owner
                                 {
@@ -129,8 +129,8 @@ namespace testNetMVC.Repositories
                                 Address = reader["address"].ToString(),
                                 Rooms = Convert.ToInt32(reader["rooms"]),
                                 Price = Convert.ToDouble(reader["price"]),
-                                // Latitude = Convert.ToDouble(reader["latitude"]),
-                                // Longitude = Convert.ToDouble(reader["longitude"]),
+                                Latitude = reader["latitude"] != DBNull.Value ? Convert.ToDouble(reader["latitude"]) : null,
+                                Longitude = reader["longitude"] != DBNull.Value ? Convert.ToDouble(reader["longitude"]) : null,
                                 Owner_id = Convert.ToInt32(reader["owner_id"].ToString()),
                                 Owner = new Owner
                                 {
@@ -192,8 +192,8 @@ namespace testNetMVC.Repositories
                         command.Parameters.AddWithValue("@type_id", property.Type_id);
                         command.Parameters.AddWithValue("@rooms", property.Rooms);
                         command.Parameters.AddWithValue("@price", property.Price);
-                        command.Parameters.AddWithValue("@latitude", property.Latitude);
-                        command.Parameters.AddWithValue("@longitude", property.Longitude);
+                        command.Parameters.AddWithValue("@latitude", property.Latitude != null ? property.Latitude : DBNull.Value);
+                        command.Parameters.AddWithValue("@longitude", property.Longitude != null ? property.Longitude : DBNull.Value);
                         command.Parameters.AddWithValue("@owner_id", property.Owner_id);
                         command.Parameters.AddWithValue("@address", property.Address);
                         connection.Open();
