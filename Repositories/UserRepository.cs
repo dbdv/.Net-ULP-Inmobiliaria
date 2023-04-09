@@ -43,8 +43,8 @@ namespace testNetMVC.Repositories
                         {
                             user = new User
                             {
-                                Id = reader["id"].ToString() != null ? Int32.Parse(reader["id"].ToString()!) : null,
-                                // Avatar = reader["avatar"].ToString() ?? null,
+                                Id = reader["id"] != DBNull.Value ? Int32.Parse(reader["id"].ToString()!) : null,
+                                Avatar = reader["avatar"] != DBNull.Value ? reader["avatar"].ToString() : null,
                                 Email = reader["email"].ToString(),
                                 Password = reader["password"].ToString(),
                                 Role_id = Convert.ToInt32(reader["role_id"]),
@@ -101,8 +101,8 @@ namespace testNetMVC.Repositories
                         {
                             user = new User
                             {
-                                Id = reader["id"].ToString() != null ? Int32.Parse(reader["id"].ToString()!) : null,
-                                Avatar = reader["avatar"].ToString(),
+                                Id = reader["id"] != DBNull.Value ? Int32.Parse(reader["id"].ToString()!) : null,
+                                Avatar = reader["avatar"] != DBNull.Value ? reader["avatar"].ToString() : null,
                                 Email = reader["email"].ToString(),
                                 Password = reader["password"].ToString(),
                                 Role_id = Convert.ToInt32(reader["role_id"]),
@@ -148,8 +148,8 @@ namespace testNetMVC.Repositories
                         {
                             var user = new User
                             {
-                                Id = reader["id"].ToString() != null ? Int32.Parse(reader["id"].ToString()!) : null,
-                                Avatar = reader["avatar"].ToString(),
+                                Id = reader["id"] != DBNull.Value ? Int32.Parse(reader["id"].ToString()!) : null,
+                                Avatar = reader["avatar"] != DBNull.Value ? reader["avatar"].ToString() : null,
                                 Email = reader["email"].ToString(),
                                 Password = reader["password"].ToString(),
                                 Role_id = Convert.ToInt32(reader["role_id"]),
@@ -280,7 +280,7 @@ namespace testNetMVC.Repositories
         }
 
 
-        public int update(User user)
+        public int update(UpdateUserBody user)
         {
             int result = -1;
             Console.WriteLine("---Updating user");
@@ -290,15 +290,14 @@ namespace testNetMVC.Repositories
                 {
                     string sql = @"
                     UPDATE users
-                    SET email=@email, password=@password, avatar=@avatar, role_id=@role_id
+                    SET password=@password, avatar=@avatar
                     WHERE id=@id;";
                     using (MySqlCommand command = new MySqlCommand(sql, connection))
                     {
                         command.CommandType = System.Data.CommandType.Text;
-                        command.Parameters.AddWithValue("@email", user.Email);
-                        command.Parameters.AddWithValue("@password", user.Password);
-                        command.Parameters.AddWithValue("@avatar", user.Avatar);
-                        command.Parameters.AddWithValue("@role_id", user.Role_id);
+                        command.Parameters.AddWithValue("@password", user.NewPassword);
+                        command.Parameters.AddWithValue("@avatar", user.AvatarUrl != null ? user.AvatarUrl : DBNull.Value);
+                        command.Parameters.AddWithValue("@id", user.Id);
                         connection.Open();
                         result = Convert.ToInt32(command.ExecuteNonQuery());
                         connection.Close();

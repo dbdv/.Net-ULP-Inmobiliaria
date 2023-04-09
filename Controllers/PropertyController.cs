@@ -10,6 +10,9 @@ public class PropertyController : Controller
 {
     private readonly ILogger<PropertyController> _logger;
     private readonly PropertyRepository propertyRepository;
+    private readonly IDictionary<string, string> accionsTempMsgs = new Dictionary<string, string>{
+        {"created","Propiedad agregada correctamente."},
+    };
 
     public PropertyController(ILogger<PropertyController> logger)
     {
@@ -68,7 +71,7 @@ public class PropertyController : Controller
 
         int created = propertyRepository.create(body);
         if (created == -1) return Problem("No se pudo agregar la propiedad", statusCode: 501);
-
+        TempData["ProcessMsg"] = accionsTempMsgs["created"];
         return Redirect("/" + nameof(Property));
     }
 

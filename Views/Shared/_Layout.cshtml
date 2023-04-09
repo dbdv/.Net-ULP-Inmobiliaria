@@ -3,7 +3,6 @@
     Console.WriteLine(avatarUrl);
     if(avatarUrl != null)
         Console.WriteLine(avatarUrl.Value == string.Empty);
-    string defaultImg = "~/images/logout.png";
 }
 <!DOCTYPE html>
 <html lang="en">
@@ -29,7 +28,8 @@
     <header>
         <nav class="my-navbar">
             <div class="logo-div">
-                <a asp-area="" asp-controller="Home" asp-action="Index" tabindex="1">
+                <a class="home-link" asp-area="" asp-controller="Home" asp-action="Index" tabindex="1">
+                    <img class="logo-header" src="~/favicon.ico" alt="inmobiliaria logo">
                     <div>
                         <span>Inmobiliaria</span>
                         <span>bustillos</span>
@@ -107,18 +107,18 @@
                     <div class="profile-menu-actions hidden">
                         <a
                             asp-action="Profile" asp-controller="User"
-                            class="profile-menu-item" 
+                            class="profile-menu-item my-profile" 
                         >
                             <img class="btn-img" src="~/images/new_person.png" alt="cerrar sesión">
                             Mis datos
                         </a>
-                        <button 
+                        <a 
                             class="profile-menu-item logout-btn" 
-                            onclick="logout(event)"
+                            asp-action="Logout" asp-controller="Home"
                         >
                             <img class="btn-img" src="~/images/logout.png" alt="cerrar sesión">
                             Salir
-                        </button>
+                        </a>
                     </div>
                 </div>
             </div>
@@ -130,7 +130,9 @@
             {
                 <div class="tempMsg">
                     <h3>@TempData.Peek("ProcessMsg")</h3>
+                    <img class="close-temp-msg" src="~/images/close_icon.png" alt="cerrar mensaje temporal" onclick="closeTempMsg()">
                 </div>
+                TempData.Remove("ProcessMsg");
             }
         }
         <main role="main" class="main">

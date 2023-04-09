@@ -32,7 +32,7 @@
                         <span>@user.Role.getRole()</span>
                     </div>
                     <div class="action-buttons list-actions-column">
-                        @* <button class="button list-action-button neutral-bg" onclick="showOwnerDetail('@user.Id')">
+                        @* <button class="button list-action-button details-bg" onclick="showOwnerDetail('@user.Id')">
                             <span class="tooltip hidden">Ver detalles</span>
                             <img class="btn-img" src="~/images/details.png" alt="ver detalles de inquilino">
                         </button> *@
@@ -52,12 +52,12 @@
         <h2 class="form-title">title</h2>
         <div class="form-row">
             <label class="form-label" for="">Email</label>
-            <input class="form-input" name="email" type="text" id="email-input" onfocus="addErrorWatcher(event)">
+            <input class="form-input" name="email" type="text" id="email-input" onchange="checkInputs()" onfocus="addErrorWatcher(event)">
             <span class="input-error">Campo obligatorio</span>
         </div>
         <div class="form-row">
             <label class="form-label" for="">Contraseña</label>
-            <input class="form-input" name="password" type="text" id="password-input" onfocus="addErrorWatcher(event)">
+            <input class="form-input" name="password" type="text" id="password-input" onchange="checkInputs()" onfocus="addErrorWatcher(event)">
             <span class="input-error">Campo obligatorio</span>
         </div>
         <div class="form-row">
@@ -108,13 +108,12 @@
     }
 
     function handleChange(e){
-        console.log(e);
         if(e.target.name == 'role_id')
             userBody[e.target.name] = parseInt(e.target.value);
         else{
             userBody[e.target.name] = e.target.value;
         }
-        console.log(userBody);
+        checkInputs();
     }
 
     function sendUser(){
@@ -216,6 +215,22 @@
             deleteUser(id);
         })
         showActions();
+    }
+
+    function checkInputs(){
+        if( userBody.email?.length > 5 &&
+            userBody.password?.length > 0 &&
+            userBody.role_id != null &&
+            userBody.role_id > 0
+        ){
+            document.querySelector("#send-button").removeAttribute("disabled"); 
+            document.querySelector("#send-button").classList.remove("disabled-btn");
+        }else{
+            document.querySelector("#send-button").setAttribute("disabled", "");
+            document.querySelector("#send-button").classList.add("disabled-btn");
+        }
+
+        console.log(userBody);
     }
 
 </script>

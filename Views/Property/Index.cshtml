@@ -8,9 +8,14 @@
     var token = antiforgery.GetAndStoreTokens(Context).RequestToken;
 }
 <script
-      src="https://maps.googleapis.com/maps/api/js?key=AIzaSyCE_uqihM0y5egCZl5QlkZNFqLd1_YPQIg&callback=initMap&v=weekly"
+      src="https://maps.googleapis.com/maps/api/js?key=AIzaSyCE_uqihM0y5egCZl5QlkZNFqLd1_YPQIg&callback=initMaps&v=weekly"
       defer
-    ></script>
+></script>
+
+@* <script
+      src="https://maps.googleapis.com/maps/api/js?key=AIzaSyCE_uqihM0y5egCZl5QlkZNFqLd1_YPQIg&callback=initDetilsMap&v=weekly"
+      defer
+></script> *@
 
 <section class="section">
     <ul class="renters-list list">
@@ -41,7 +46,7 @@
                         <span class="prop-list-field address-field">@property.Address</span>
                     </div>
                     <div class="action-buttons list-actions-column">
-                        <button class="button list-action-button neutral-bg" onclick="showPropertyDetail('@property.Id')">
+                        <button class="button list-action-button details-bg" onclick="showPropertyDetail('@property.Id')">
                             <span class="tooltip hidden">Ver detalles</span>
                             <img class="btn-img" src="~/images/details.png" alt="">
                         </button>
@@ -117,39 +122,40 @@
     <form onsubmit="handleSubmit(event)" onclick="handleGeneralFormClicks(event)" class="form-detail form-detail-props hidden">
         <h2 class="form-title form-title-props">Detalles de propiedad</h2>
         <div class="form-row">
-            <label class="form-label" for="">@Html.DisplayNameFor(Props=>Props[0].Type_id)<sup>*</sup></label>
-            <select disabled class="form-input form-input-select" name="type_id" id="type_id-detail" onchange="handleChange(event)">
+            <label class="form-label" for="">@Html.DisplayNameFor(Props=>Props[0].Type_id)</label>
+            <select disabled class="form-input form-input-select" name="type_id" id="type_id-detail">
                 @foreach(var prop_type in ((List<PropType>)ViewBag.types)){
                     <option value=@prop_type.Id>@prop_type.Label</option>
                 }
             </select>
         </div>
         <div class="form-row">
-            <label class="form-label" for="">@Html.DisplayNameFor(Props=>Props[0].Purpose_id)<sup>*</sup></label>
-            <select disabled class="form-input form-input-select" name="purpose_id" id="purpose_id-detail" onchange="handleChange(event)">
+            <label class="form-label" for="">@Html.DisplayNameFor(Props=>Props[0].Purpose_id)</label>
+            <select disabled class="form-input form-input-select" name="purpose_id" id="purpose_id-detail">
                 @foreach(var purpose in ((List<Purpose>)ViewBag.purposes)){
                     <option value=@purpose.Id>@purpose.Description</option>
                 }
             </select>
         </div> 
         <div class="form-row">
-            <label class="form-label" for="">@Html.DisplayNameFor(Props=>Props[0].Rooms)<sup>*</sup></label>
-            <input disabled onchange="handleChange(event)" onclick="addErrorWatcher(event)" onfocus="addErrorWatcher(event)" onfocusout="checkInputs()" id="rooms-field-detail" name="rooms" class="form-input" type="number" min="1" required>
+            <label class="form-label" for="">@Html.DisplayNameFor(Props=>Props[0].Rooms)</label>
+            <input disabled id="rooms-field-detail" name="rooms" class="form-input" type="number" min="1" required>
         </div>
         <div class="form-row">
-            <label class="form-label" for="">@Html.DisplayNameFor(Props=>Props[0].Price)<sup>*</sup></label>
-            <input disabled onchange="handleChange(event)" onclick="addErrorWatcher(event)" onfocus="addErrorWatcher(event)" onfocusout="checkInputs()" id="price-field-detail" name="price" class="form-input" type="number" min="1" required>
+            <label class="form-label" for="">@Html.DisplayNameFor(Props=>Props[0].Price)</label>
+            <input disabled id="price-field-detail" name="price" class="form-input" type="text" min="1" required>
         </div>
         <div class="form-row">
-            <label class="form-label" for="">@Html.DisplayNameFor(Props=>Props[0].Address)<sup>*</sup></label>
-            <input disabled onchange="handleChange(event)" onclick="addErrorWatcher(event)" onfocus="addErrorWatcher(event)" onfocusout="checkInputs()" id="address-field-detail" name="address" class="form-input" type="text" required>
+            <label class="form-label" for="">@Html.DisplayNameFor(Props=>Props[0].Address)</label>
+            <input disabled id="address-field-detail" name="address" class="form-input" type="text" required>
         </div>
         <div class="form-row">
-            <label class="form-label" for="">@Html.DisplayNameFor(Props=>Props[0].Owner_id)<sup>*</sup></label>
+            <label class="form-label" for="">@Html.DisplayNameFor(Props=>Props[0].Owner_id)</label>
             <div class="options-div">
-                <input disabled onkeyup="handleSuggestions(event)"  onclick="addErrorWatcher(event)" onfocus="addErrorWatcher(event)" onfocusout="checkInputs()" id="owner-field-detail" name="owner" class="form-input suggestions" type="text" required>
+                <input disabled id="owner-field-detail" name="owner" class="form-input suggestions" type="text" required>
             </div>
         </div>
+        <div id="details-map"></div>
         <div class="details-form-actions">
             <h2 class="new-contract-title hidden">Nuevo contrato</h2>
             <button class="show-create-contract-btn" id="show-create-contract-button" onclick="newContractForm()">Nuevo contrato</button>
@@ -233,8 +239,6 @@
         latitude: defaultLatLng.lat,
         longitude: defaultLatLng.lng,
     };
-
-
     
     const default_contract_body = {
         from: null,
@@ -247,24 +251,23 @@
     let body_data = default_body;
     let contract_body_data = default_contract_body;
 
+    const markers = [];
 
-    function handleSubmit(e){
-        e.preventDefault();
+    function removeMarkers(){
+        for (var i = 0; i < markers.length; i++) {
+            markers[i].setMap(null);
+        }
     }
 
-    let map;
-
-    function initMap() {
-        map = new google.maps.Map(document.getElementById("map"), {
-            center: defaultLatLng,
-            zoom: 12,
-        });
+    function setMarkerDefault(){
         const marker = new google.maps.Marker({
             position: defaultLatLng,
             map,
             draggable: true,
             title: "Selecciona la ubicación!",
         });
+
+        markers.push(marker);
 
         map.addListener('click', (e)=>{
             map.panTo(e.latLng);
@@ -280,8 +283,57 @@
             map.setCenter(marker.getPosition());
         })
     }
+    
 
-    window.initMap = initMap;
+    function handleSubmit(e){
+        e.preventDefault();
+    }
+
+    let map;
+    let detailsMap;
+
+    function initMap() {
+        map = new google.maps.Map(document.getElementById("map"), {
+            center: defaultLatLng,
+            zoom: 12,
+        });
+        const marker = new google.maps.Marker({
+            position: defaultLatLng,
+            map,
+            draggable: true,
+            title: "Selecciona la ubicación!",
+        });
+
+        markers.push(marker);
+
+        map.addListener('click', (e)=>{
+            map.panTo(e.latLng);
+            marker.setPosition(e.latLng);
+            body_data.latitude = e.latLng.lat();
+            body_data.longitude = e.latLng.lng();
+            @* console.log(body_data); *@
+        })
+
+
+        marker.addListener('click', (e)=>{
+            map.setZoom(16);
+            map.setCenter(marker.getPosition());
+        })
+    }
+    
+    function initDetilsMap() {
+        detailsMap = new google.maps.Map(document.getElementById("details-map"), {
+            center: defaultLatLng,
+            zoom: 16,
+        });
+    }
+
+    function initMaps(){
+        initMap();
+        initDetilsMap();
+    }
+
+    window.initMaps = initMaps;
 
     function handleChange(event){
         const key = event.target.name;
@@ -449,6 +501,20 @@
         document.querySelector("#rooms-input").value=body_data.rooms;
         document.querySelector("#purpose_id").value=body_data.purpose_id;
         document.querySelector("#type_id").value=body_data.type_id;
+        removeMarkers();
+        if(property.latitude && property.longitude){
+            const center = {lat: property.latitude, lng: property.longitude};
+            const marker = new google.maps.Marker({
+                position: center,
+                map,
+                draggable: true,
+                title: "Selecciona la ubicación!",
+            });
+            markers.push(marker);
+            marker.setMap(map);
+        }else{
+            setMarkerDefault();
+        }
         document.querySelector("#send-button").addEventListener("click", ()=>{sendUpdateReq(property.id)});
     }
     function displayPropertyInfo(property){
@@ -458,6 +524,28 @@
         document.querySelector("#price-field-detail").value="$" + property.price;
         document.querySelector("#address-field-detail").value=property.address;
         document.querySelector("#owner-field-detail").value= property.owner.first_name + " " + property.owner.last_name + " " + property.owner.dni;
+        if(property.latitude && property.longitude){
+            const center = {lat: property.latitude, lng: property.longitude};
+            setDeailsMapCoor(center);
+        }else{
+            hideDetailsMap()
+        }
+    }
+
+    function setDeailsMapCoor(center){
+        detailsMap.setCenter(center);
+        const marker = new google.maps.Marker({
+            position: center,
+            detailsMap,
+            draggable: false,
+        });
+        markers.push(marker);
+        marker.setMap(detailsMap);
+        document.getElementById("details-map").classList.remove("hidden");
+    }
+
+    function hideDetailsMap() {
+        document.getElementById("details-map").classList.add("hidden");
     }
     
     function showPropertyDetail(id){
@@ -492,15 +580,6 @@
         )
             return showError('Datos inválidos', 'No completó correctamente alguno de los datos.');
 
-        const body = {
-            "Address": body_data.address,
-            "Owner_id": body_data.owner_id,
-            "Price": body_data.price,
-            "Purpose_id": body_data.purpose_id,
-            "Rooms": body_data.rooms,
-            "Type_id": body_data.type_id,
-        }
-
         document.querySelector(".form").classList.add("hidden");
         document.querySelector(".spinner").classList.remove("hidden");
 
@@ -510,7 +589,7 @@
                     "Content-Type": "application/json",
                     "RequestVerificationToken": "@token"
                 },
-                body: JSON.stringify(body),
+                body: JSON.stringify(body_data),
             }).then(res=>{
                 if(res.status != 200)
                     showError("Error", "No se pudo agregar la propiedad, intenta nuevamente.", ()=>{
