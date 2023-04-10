@@ -216,7 +216,7 @@ input[type="number"] {
   display: flex;
   align-items: center;
   gap: 1rem;
-  width: 300px;
+  width: 350px;
   margin: 0 auto;
 }
 
@@ -225,4 +225,8 @@ input.disabled {
   color: black;
   background: transparent;
   cursor: auto;
+}
+
+.email-label {
+  width: 350px;
 }

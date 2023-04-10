@@ -11,6 +11,8 @@ using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authentication;
 
 namespace testNetMVC.Controllers;
+
+[Authorize]
 public class UserController : Controller
 {
     private readonly IDictionary<string, string> accionsTempMsgs = new Dictionary<string, string>{
@@ -113,14 +115,8 @@ public class UserController : Controller
             string fullPath = Path.Combine("./wwwroot/uploads/", currentUserData.Avatar);
             if (System.IO.File.Exists(fullPath))
             {
-                Console.WriteLine("existe");
                 System.IO.File.Delete(fullPath);
             }
-            else
-            {
-                Console.WriteLine("no existe");
-            }
-            Console.WriteLine("esta adentro de avatarURl empty");
             user.Avatar = null;
             user.AvatarUrl = null;
         }
@@ -144,10 +140,17 @@ public class UserController : Controller
         if (!(id >= 0))
             return BadRequest();
 
+        string avatarPath = userRepo.get(id).Avatar;
         int deleted = userRepo.delete(id);
 
         if (deleted == -1)
             return Error();
+
+        string fullPath = Path.Combine("./wwwroot/uploads/", avatarPath);
+        if (System.IO.File.Exists(fullPath))
+        {
+            System.IO.File.Delete(fullPath);
+        }
 
         return Redirect("/users-managment");
     }

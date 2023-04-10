@@ -44,12 +44,8 @@ public class HomeController : Controller
             return NotFound();
         }
 
-        string hashed = Convert.ToBase64String(KeyDerivation.Pbkdf2(
-                        password: userBody.password,
-                        salt: System.Text.Encoding.ASCII.GetBytes("secretito"),
-                        prf: KeyDerivationPrf.HMACSHA1,
-                        iterationCount: 1000,
-                        numBytesRequested: 256 / 8));
+        string hashed = Models.User.getHashPassword(userBody.password);
+
         if (dbUser.Password != hashed)
         {
             return NotFound();
