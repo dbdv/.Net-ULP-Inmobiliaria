@@ -17,7 +17,7 @@
             </div>
         </section>
         <section class="login">
-            <form class="login-form" onsubmit="handleSubmit(event)">
+            <form autocomplete="off" class="login-form" onsubmit="handleSubmit(event)">
                 <div onclick="removeLoginError()" class="inputs-box">
                     <input onkeyup="handleChange(event)" name="email" class="login-form-input" autofocus tabindex="1" type="email" placeholder="Email...">
                     <input onkeyup="handleChange(event)" name="password" class="login-form-input" tabindex="2" type="password" placeholder="Contraseña...">

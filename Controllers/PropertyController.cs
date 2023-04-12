@@ -22,16 +22,14 @@ public class PropertyController : Controller
 
     public IActionResult Index()
     {
-        TypeRepository type_repo = new TypeRepository();
-        PurposeRepository purpose_repo = new PurposeRepository();
         OwnerRepository owner_repo = new OwnerRepository();
         RenterRepository renter_repo = new RenterRepository();
 
         List<Property>? properties = propertyRepository.getAll();
-        ViewBag.types = (List<PropType>)type_repo.getAll();
-        ViewBag.purposes = (List<Purpose>)purpose_repo.getAll();
-        ViewBag.owners = (List<Owner>)owner_repo.getAll();
-        ViewBag.renters = (List<Renter>)renter_repo.getAll();
+        ViewBag.types = propertyRepository.getPropTypes();
+        ViewBag.purposes = propertyRepository.getPurposes();
+        ViewBag.owners = owner_repo.getAll();
+        ViewBag.renters = renter_repo.getAll();
 
         if (properties is null) return View("loginError");
 
@@ -75,23 +73,19 @@ public class PropertyController : Controller
         return Redirect("/" + nameof(Property));
     }
 
-    /*
-
-    [HttpPut]
-    // [ValidateAntiForgeryToken]
-    [Route("Property/update")]
-    public IActionResult Update([FromBody] Property body)
+    [HttpGet]
+    [Route(nameof(Property) + "/unavailableDates/{id}")]
+    [ValidateAntiForgeryToken]
+    public IActionResult GetUnavailableDates(int id)
     {
-        if (body.Email == string.Empty || body.First_name == string.Empty || body.Last_name == string.Empty || body.Dni == string.Empty)
-            return BadRequest("Datos incorrectos.");
+        if (id < 1)
+            return Problem("ID inválido.", statusCode: 400);
+        var dates = propertyRepository.getUnavailableDates(id);
 
-        int updated = propertyRepository.update(body);
+        if (dates is null) return Problem("No se pudo acceder a los datos del usuario", statusCode: 500);
 
-        if (updated == -1) return Problem("No se pudo actualizar la información del inquilino");
-
-        return Redirect("/Property");
+        return Json(dates);
     }
-    */
 
     [HttpGet]
     [Route("Property/{id}")]
@@ -109,6 +103,7 @@ public class PropertyController : Controller
     }
 
     [HttpDelete]
+    [Authorize(Policy = "admin")]
     [Route("Property/{id}")]
     // [ValidateAntiForgeryToken]
     public IActionResult Delete(int id)

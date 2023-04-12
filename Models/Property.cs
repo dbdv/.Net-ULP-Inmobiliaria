@@ -31,5 +31,10 @@ namespace testNetMVC.Models
         [ForeignKey(nameof(Owner_id))]
         public Owner? Owner { get; set; }
 
+        public override string ToString()
+        {
+            return $"{Address} | Tipo: {PropType.Label} | Dueño: {Owner.ToString()} | Hab: {Rooms}";
+        }
+
     }
 }

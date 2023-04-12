@@ -30,9 +30,10 @@ public class UserController : Controller
     [Route("users-managment")]
     public IActionResult Index()
     {
-        ViewBag.users = (List<User>)userRepo.getAll();
-        ViewBag.roles = (List<Role>)userRepo.getRoles();
+        ViewBag.users = userRepo.getAll();
+        ViewBag.roles = userRepo.getRoles();
 
+        var testPath = Environment.CurrentDirectory;
         return View();
     }
 
@@ -69,7 +70,7 @@ public class UserController : Controller
             return Error();
 
         TempData["ProcessMsg"] = accionsTempMsgs["created"];
-        return Redirect("/admin");
+        return Redirect("/users");
     }
 
     [HttpPost]

@@ -10288,7 +10288,7 @@ jQuery.ajaxPrefilter( "json jsonp", function( s, originalSettings, jqXHR ) {
 // https://bugs.webkit.org/show_bug.cgi?id=137337
 support.createHTMLDocument = ( function() {
 	var body = document.implementation.createHTMLDocument( "" ).body;
-	body.innerHTML = "<form></form><form></form>";
+	body.innerHTML = "<form autocomplete="off"></form><form autocomplete="off"></form>";
 	return body.childNodes.length === 2;
 } )();
 

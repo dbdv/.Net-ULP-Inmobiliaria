@@ -99,7 +99,7 @@ namespace testNetMVC.Repositories
         public List<Property>? getAll()
         {
             List<Property>? properties = new List<Property> { };
-            Console.WriteLine("---Retriving all properties var por aca");
+            Console.WriteLine("---Retriving all properties");
 
             try
             {
@@ -237,39 +237,135 @@ namespace testNetMVC.Repositories
             return result;
         }
 
-        /*
-
-        public int update(Renter renter)
+        public List<PropType>? getPropTypes()
         {
-            int result = -1;
-            Console.WriteLine("---Updating renter");
+            List<PropType>? types = new List<PropType> { };
+            Console.WriteLine("---Retriving all types");
+
             try
             {
                 using (MySqlConnection connection = new MySqlConnection(_connecString))
                 {
-                    string sql = @"UPDATE properties SET dni=@dni, first_name=@first_name, last_name=@last_name, email=@email" + (renter.Phone != string.Empty ? ", phone=@phone" : "") + " WHERE id=@id; SELECT LAST_INSERT_ID()";
+                    string sql = @"SELECT id, label FROM types;";
                     using (MySqlCommand command = new MySqlCommand(sql, connection))
                     {
                         command.CommandType = System.Data.CommandType.Text;
-                        command.Parameters.AddWithValue("@dni", renter.Dni);
-                        command.Parameters.AddWithValue("@first_name", renter.First_name);
-                        command.Parameters.AddWithValue("@last_name", renter.Last_name);
-                        command.Parameters.AddWithValue("@email", renter.Email);
-                        command.Parameters.AddWithValue("@phone", renter.Phone);
-                        command.Parameters.AddWithValue("@id", renter.Id);
                         connection.Open();
-                        result = Convert.ToInt32(command.ExecuteScalar());
+                        var reader = command.ExecuteReader();
+                        while (reader.Read())
+                        {
+                            var type = new PropType
+                            {
+                                Id = reader["id"].ToString() != null ? Int32.Parse(reader["id"].ToString()!) : null,
+                                Label = reader["label"].ToString(),
+                            };
+
+                            types.Add(type);
+                        }
                         connection.Close();
                     }
                 }
             }
             catch (Exception ex)
             {
-                Console.WriteLine("---Error updating renter" + ex);
+                Console.WriteLine("---Error retriving all types " + ex);
+                return null;
             }
 
-            return result;
+            return types;
         }
-        */
+
+        public List<Purpose>? getPurposes()
+        {
+            List<Purpose>? purposes = new List<Purpose> { };
+            Console.WriteLine("---Retriving all property purposes");
+
+            try
+            {
+                using (MySqlConnection connection = new MySqlConnection(_connecString))
+                {
+                    string sql = @"SELECT id, description FROM purposes;";
+                    using (MySqlCommand command = new MySqlCommand(sql, connection))
+                    {
+                        command.CommandType = System.Data.CommandType.Text;
+                        if (_logger != null)
+                            _logger.LogInformation("hola");
+                        connection.Open();
+                        var reader = command.ExecuteReader();
+                        while (reader.Read())
+                        {
+                            var purpose = new Purpose
+                            {
+                                Id = reader["id"].ToString() != null ? Int32.Parse(reader["id"].ToString()!) : null,
+                                Description = reader["description"].ToString(),
+                            };
+
+                            purposes.Add(purpose);
+                        }
+                        connection.Close();
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("---Error retriving all property purposes " + ex);
+                return null;
+            }
+
+            return purposes;
+        }
+
+        public List<UnavailableDates> getUnavailableDates(int id)
+        {
+            List<UnavailableDates> dates = new List<UnavailableDates>();
+
+            Console.WriteLine($"---Retriving unavailable dates for prop with id {id}");
+
+            try
+            {
+                using (MySqlConnection connection = new MySqlConnection(_connecString))
+                {
+                    string sql = @"
+                    SELECT since, until
+                    FROM contracts
+                    JOIN properties ON properties.id = contracts.property_id
+                    WHERE properties.id=@id;";
+                    using (MySqlCommand command = new MySqlCommand(sql, connection))
+                    {
+
+                        command.CommandType = System.Data.CommandType.Text;
+                        command.Parameters.AddWithValue("@id", id);
+                        Console.WriteLine("---Executing query: \n\n\t" + command.CommandText.Replace("@id", id.ToString()) + "\n");
+
+                        connection.Open();
+
+                        var reader = command.ExecuteReader();
+
+                        while (reader.Read())
+                        {
+                            var date = new UnavailableDates
+                            {
+                                From = Convert.ToDateTime(reader["since"]),
+                                Until = Convert.ToDateTime(reader["until"]),
+                            };
+                        }
+                        connection.Close();
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("---Error retriving contract " + ex);
+
+            }
+
+            return dates;
+        }
+
+        public class UnavailableDates
+        {
+            public DateTime From { get; set; }
+            public DateTime Until { get; set; }
+        }
     }
 }

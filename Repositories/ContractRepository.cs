@@ -1,5 +1,7 @@
 using MySql.Data.MySqlClient;
 using testNetMVC.Models;
+using System;
+using System.Globalization;
 
 namespace testNetMVC.Repositories
 {
@@ -8,6 +10,7 @@ namespace testNetMVC.Repositories
         private readonly string _connecString = "Server=localhost;User=root;Password=password;Database=dotnettest1;SslMode=none";
 
         private readonly ILogger<ContractRepository>? _logger;
+        CultureInfo provider = CultureInfo.InvariantCulture;
         public ContractRepository(ILogger logger)
         {
             _logger = (ILogger<ContractRepository>)logger;
@@ -27,11 +30,15 @@ namespace testNetMVC.Repositories
             {
                 using (MySqlConnection connection = new MySqlConnection(_connecString))
                 {
-                    string sql = @"SELECT contract.id id, from, until, fee, renter_id,
-                    property_id,
-                    renter_id, dni, email, first_name, last_name, phone
+                    string sql = @"SELECT contracts.id id, since, until, fee, renter_id,
+                    property_id, address, rooms,
+                    t.label,
+                    o.first_name o_first_name, o.last_name o_last_name, o.dni o_dni,
+                    renter_id, r.dni r_dni, r.first_name r_first_name, r.last_name r_last_name
                     FROM contracts
                     JOIN properties p ON p.id = contracts.property_id
+                    JOIN owners o ON p.owner_id = o.id
+                    JOIN types t ON t.id = p.type_id
                     JOIN renters r ON r.id = contracts.renter_id
                     WHERE contracts.id=@id;";
                     using (MySqlCommand command = new MySqlCommand(sql, connection))
@@ -55,21 +62,27 @@ namespace testNetMVC.Repositories
                                 {
                                     Id = reader["id"].ToString() != null ? Int32.Parse(reader["id"].ToString()!) : null,
                                     Address = reader["address"].ToString(),
-                                    // Rooms = Convert.ToInt32(reader["rooms"]),
-                                    Price = Convert.ToDouble(reader["price"]),
-                                    // Latitude = Convert.ToDouble(reader["latitude"]),
-                                    // Longitude = Convert.ToDouble(reader["longitude"]),
-                                    Owner_id = Convert.ToInt32(reader["owner_id"].ToString()),
+                                    Rooms = Convert.ToInt32(reader["rooms"]),
+                                    PropType = new PropType
+                                    {
+                                        Label = reader["label"].ToString()
+                                    },
+                                    Owner = new Owner
+                                    {
+                                        First_name = reader["o_first_name"].ToString(),
+                                        Last_name = reader["o_first_name"].ToString(),
+                                        Dni = reader["o_dni"].ToString(),
+                                    }
                                 },
-                                From = Convert.ToDateTime(reader["from"]),
+                                From = Convert.ToDateTime(reader["since"]),
                                 Until = Convert.ToDateTime(reader["until"]),
                                 Fee = Convert.ToDecimal(reader["fee"]),
                                 Renter_id = Int32.Parse(reader["renter_id"].ToString()!),
                                 Renter = new Renter
                                 {
-                                    First_name = reader["first_name"].ToString(),
-                                    Last_name = reader["last"].ToString(),
-                                    Dni = reader["dni"].ToString(),
+                                    First_name = reader["r_first_name"].ToString(),
+                                    Last_name = reader["r_last_name"].ToString(),
+                                    Dni = reader["r_dni"].ToString(),
                                 },
                             };
                         }
@@ -88,25 +101,28 @@ namespace testNetMVC.Repositories
 
         public List<Contract>? getAll()
         {
-            List<Contract>? properties = new List<Contract> { };
-            Console.WriteLine("---Retriving all properties var por aca");
+            List<Contract>? contracts = new List<Contract> { };
+            Console.WriteLine("---Retriving all contracts");
 
             try
             {
                 using (MySqlConnection connection = new MySqlConnection(_connecString))
                 {
-                    string sql = @"SELECT contract.id id, from, until, fee, renter_id,
-                    property_id,
-                    renter_id, dni, email, first_name, last_name, phone
+                    string sql = @"SELECT contracts.id id, since, until, fee, renter_id,
+                    property_id, address, rooms,
+                    t.label,
+                    o.first_name o_first_name, o.last_name o_last_name, o.dni o_dni,
+                    renter_id, r.dni r_dni, r.first_name r_first_name, r.last_name r_last_name
                     FROM contracts
                     JOIN properties p ON p.id = contracts.property_id
+                    JOIN owners o ON p.owner_id = o.id
+                    JOIN types t ON t.id = p.type_id
                     JOIN renters r ON r.id = contracts.renter_id;";
 
                     using (MySqlCommand command = new MySqlCommand(sql, connection))
                     {
                         command.CommandType = System.Data.CommandType.Text;
-                        if (_logger != null)
-                            _logger.LogInformation("hola");
+                        Console.WriteLine("---Executing query: \n\n\t" + command.CommandText);
                         connection.Open();
                         var reader = command.ExecuteReader();
                         while (reader.Read())
@@ -119,25 +135,31 @@ namespace testNetMVC.Repositories
                                 {
                                     Id = reader["id"].ToString() != null ? Int32.Parse(reader["id"].ToString()!) : null,
                                     Address = reader["address"].ToString(),
-                                    // Rooms = Convert.ToInt32(reader["rooms"]),
-                                    Price = Convert.ToDouble(reader["price"]),
-                                    // Latitude = Convert.ToDouble(reader["latitude"]),
-                                    // Longitude = Convert.ToDouble(reader["longitude"]),
-                                    Owner_id = Convert.ToInt32(reader["owner_id"].ToString()),
+                                    Rooms = Convert.ToInt32(reader["rooms"]),
+                                    PropType = new PropType
+                                    {
+                                        Label = reader["label"].ToString()
+                                    },
+                                    Owner = new Owner
+                                    {
+                                        First_name = reader["o_first_name"].ToString(),
+                                        Last_name = reader["o_first_name"].ToString(),
+                                        Dni = reader["o_dni"].ToString(),
+                                    }
                                 },
-                                From = Convert.ToDateTime(reader["from"]),
+                                From = Convert.ToDateTime(reader["since"]),
                                 Until = Convert.ToDateTime(reader["until"]),
                                 Fee = Convert.ToDecimal(reader["fee"]),
                                 Renter_id = Int32.Parse(reader["renter_id"].ToString()!),
                                 Renter = new Renter
                                 {
-                                    First_name = reader["first_name"].ToString(),
-                                    Last_name = reader["last"].ToString(),
-                                    Dni = reader["dni"].ToString(),
+                                    First_name = reader["r_first_name"].ToString(),
+                                    Last_name = reader["r_last_name"].ToString(),
+                                    Dni = reader["r_dni"].ToString(),
                                 },
                             };
 
-                            properties.Add(contract);
+                            contracts.Add(contract);
                         }
                         connection.Close();
                     }
@@ -145,11 +167,11 @@ namespace testNetMVC.Repositories
             }
             catch (Exception ex)
             {
-                Console.WriteLine("---Error retriving all properties " + ex);
+                Console.WriteLine("---Error retriving all contracts " + ex);
                 return null;
             }
 
-            return properties;
+            return contracts;
         }
 
         public int create(Contract contract)
@@ -162,9 +184,10 @@ namespace testNetMVC.Repositories
 
                 using (MySqlConnection connection = new MySqlConnection(_connecString))
                 {
-
-                    string sql = @"INSERT INTO contracts(from, until, renter_id, property_id, fee) 
-                    VALUES (@from, @until, @renter_id, @property_id, @fee);
+                    string fromDate = Convert.ToDateTime(contract.From.ToString()).ToString("yyyy-MM-dd H:mm:ss"),
+                    untilDate = Convert.ToDateTime(contract.Until.ToString()).ToString("yyyy-MM-dd H:mm:ss");
+                    string sql = @"INSERT INTO contracts(since, until, renter_id, property_id, fee) 
+                    VALUES (@since, @until, @renter_id, @property_id, @fee);
                     SELECT LAST_INSERT_ID()";
                     Console.WriteLine(sql);
                     using (MySqlCommand command = new MySqlCommand(sql, connection))
@@ -172,8 +195,8 @@ namespace testNetMVC.Repositories
                         command.CommandType = System.Data.CommandType.Text;
                         command.Parameters.AddWithValue("@renter_id", contract.Renter_id);
                         command.Parameters.AddWithValue("@property_id", contract.Property_id);
-                        command.Parameters.AddWithValue("@from", contract.From);
-                        command.Parameters.AddWithValue("@until", contract.Until);
+                        command.Parameters.AddWithValue("@since", fromDate);
+                        command.Parameters.AddWithValue("@until", untilDate);
                         command.Parameters.AddWithValue("@fee", contract.Fee);
                         connection.Open();
                         id = Convert.ToInt32(command.ExecuteScalar());
@@ -183,7 +206,7 @@ namespace testNetMVC.Repositories
             }
             catch (Exception ex)
             {
-                Console.WriteLine("---Error creating the renter " + ex);
+                Console.WriteLine("---Error creating contract " + ex);
             }
 
             return id;
@@ -216,39 +239,5 @@ namespace testNetMVC.Repositories
             return result;
         }
 
-        /*
-
-        public int update(Renter renter)
-        {
-            int result = -1;
-            Console.WriteLine("---Updating renter");
-            try
-            {
-                using (MySqlConnection connection = new MySqlConnection(_connecString))
-                {
-                    string sql = @"UPDATE properties SET dni=@dni, first_name=@first_name, last_name=@last_name, email=@email" + (renter.Phone != string.Empty ? ", phone=@phone" : "") + " WHERE id=@id; SELECT LAST_INSERT_ID()";
-                    using (MySqlCommand command = new MySqlCommand(sql, connection))
-                    {
-                        command.CommandType = System.Data.CommandType.Text;
-                        command.Parameters.AddWithValue("@dni", renter.Dni);
-                        command.Parameters.AddWithValue("@first_name", renter.First_name);
-                        command.Parameters.AddWithValue("@last_name", renter.Last_name);
-                        command.Parameters.AddWithValue("@email", renter.Email);
-                        command.Parameters.AddWithValue("@phone", renter.Phone);
-                        command.Parameters.AddWithValue("@id", renter.Id);
-                        connection.Open();
-                        result = Convert.ToInt32(command.ExecuteScalar());
-                        connection.Close();
-                    }
-                }
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine("---Error updating renter" + ex);
-            }
-
-            return result;
-        }
-        */
     }
 }

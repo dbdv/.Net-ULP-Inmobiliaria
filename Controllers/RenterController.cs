@@ -94,6 +94,7 @@ public class RenterController : Controller
     }
 
     [HttpDelete]
+    [Authorize(Policy = "admin")]
     [Route("Renter/delete/{id}")]
     // [ValidateAntiForgeryToken]
     public IActionResult Delete(int id)

@@ -54,10 +54,12 @@
                             <span class="tooltip hidden">Editar</span>
                             <img class="btn-img" src="~/images/edit.png" alt="">
                         </button>
-                        <button class="button list-action-button danger-bg" onclick="confirmDelete('@property.Id')">
-                            <span class="tooltip hidden">Eliminar</span>
-                            <img class="btn-img" src="~/images/delete.png" alt="">
-                        </button>
+                        @if(Context.User.IsInRole("admin")){
+                            <button class="button list-action-button danger-bg" onclick="confirmDelete('@property.Id')">
+                                <span class="tooltip hidden">Eliminar</span>
+                                <img class="btn-img" src="~/images/delete.png" alt="">
+                            </button>
+                        }
                     </div>
                 </li>
             }
@@ -106,7 +108,19 @@
         <div class="form-row">
             <label class="form-label" for="">@Html.DisplayNameFor(Props=>Props[0].Owner_id)<sup>*</sup></label>
             <div class="options-div">
-                <input onkeyup="handleSuggestions(event)"  onclick="addErrorWatcher(event)" onfocus="addErrorWatcher(event)" onfocusout="checkInputs()" id="owner-input" name="owner" class="form-input suggestions" type="text" required>
+                <input 
+                    
+                    onkeyup="handleSuggestions(event)"  
+                    onclick="addErrorWatcher(event)" 
+                    onfocus="addErrorWatcher(event)" 
+                    onfocusout="checkInputs()" 
+                    id="owner-input" 
+                    name="owner" 
+                    class="form-input suggestions" 
+                    type="text" 
+                    required
+                    autocomplete="off"
+                >
                 <span class="input-error">Campo obligatorio</span>
                 <div class="options-modal hidden"></div>
             </div>
@@ -164,9 +178,20 @@
             <div class="form-row">
                 <label class="form-label">Inquilino</label>
                 <div class="renters-options-div">
-                    <input onkeyup="handleRentersSuggestions(event)"  onclick="addErrorWatcher(event)" onfocus="addErrorWatcher(event)" onfocusout="checkInputs()" id="renter-input" name="renter" class="form-input suggestions" type="text" required>
+                    <input 
+                        onkeyup="handleRentersSuggestions(event)"  
+                        onclick="addErrorWatcher(event)" 
+                        onfocus="addErrorWatcher(event)" 
+                        onfocusout="checkInputs()" 
+                        id="renter-input" 
+                        name="renter" 
+                        class="form-input suggestions" 
+                        type="text" 
+                        required
+                        autocomplete="off"
+                    >
                     <span class="input-error">Campo obligatorio</span>
-                    <div class="renters-options-modal hidden"></div>
+                    <div class="renters-options-modal options-modal hidden"></div>
                 </div>
             </div>
             <div class="form-row">
@@ -422,13 +447,9 @@
     }
 
     function cancelAction(){
-        document.querySelector(".actions-section").classList.add("actions-section-hide")
-        document.querySelector(".form").classList.add("hidden");
-        document.querySelector(".confirm-delete").classList.add("hidden");
-        document.querySelector(".spinner").classList.remove("hidden");
+        hideModal();
         clearForm();
         removeErrorWatcher();
-        delete_id = null;
     }
 
     function confirmDelete(id){
@@ -669,15 +690,24 @@
                 return (item.first_name+" "+item.last_name + " " + item.dni).toLowerCase().includes(keyword.toLowerCase())
             })
 
-            matches.forEach(match=>{
+            matches.forEach((match, index)=>{
                 options_div.classList.remove("hidden")
                 const span = document.createElement('span');
                 span.id = match.id;
                 span.classList.add("option-span");
-                span.innerText = match.first_name + " " + match.last_name + " " + match.dni;
+                span.setAttribute('tabindex', index * 100);
+                span.innerText = `${match.first_name} ${match.last_name} DNI: ${match.dni}`;
                 span.addEventListener('click', ()=>{
                     body_data.owner_id = match.id;
-                    document.querySelector("#owner-input").value = match.first_name + " " + match.last_name + " " + match.dni;
+                    document.querySelector("#owner-input").value = span.innerText;
+                    document.querySelector("#owner-input").setAttribute('isvalid', true);
+                    options_div.classList.add("hidden")
+                    document.querySelector("#owner-input").classList.remove('invalid');
+                    checkInputs();
+                })
+                span.addEventListener('keydown', ()=>{
+                    body_data.owner_id = match.id;
+                    document.querySelector("#owner-input").value = span.innerText;
                     document.querySelector("#owner-input").setAttribute('isvalid', true);
                     options_div.classList.add("hidden")
                     document.querySelector("#owner-input").classList.remove('invalid');
@@ -703,15 +733,24 @@
                 return (item.first_name+" "+item.last_name + " " + item.dni).toLowerCase().includes(keyword.toLowerCase())
             })
 
-            matches.forEach(match=>{
+            matches.forEach((match, index)=>{
                 options_div.classList.remove("hidden")
                 const span = document.createElement('span');
                 span.id = match.id;
                 span.classList.add("option-span");
-                span.innerText = match.first_name + " " + match.last_name + " " + match.dni;
+                span.setAttribute('tabindex', index * 100);
+                span.innerText = `${match.first_name} ${match.last_name} DNI: ${match.dni}`;
                 span.addEventListener('click', ()=>{
                     contract_body_data.renter_id = match.id;
-                    document.querySelector("#renter-input").value = match.first_name + " " + match.last_name + " " + match.dni;
+                    document.querySelector("#renter-input").value = span.innerText;
+                    document.querySelector("#renter-input").setAttribute('isvalid', true);
+                    options_div.classList.add("hidden")
+                    document.querySelector("#renter-input").classList.remove('invalid');
+                    checkInputs();
+                })
+                span.addEventListener('keydown', ()=>{
+                    contract_body_data.renter_id = match.id;
+                    document.querySelector("#renter-input").value = span.innerText;
                     document.querySelector("#renter-input").setAttribute('isvalid', true);
                     options_div.classList.add("hidden")
                     document.querySelector("#renter-input").classList.remove('invalid');

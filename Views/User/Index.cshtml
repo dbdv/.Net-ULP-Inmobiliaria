@@ -36,10 +36,12 @@
                             <span class="tooltip hidden">Ver detalles</span>
                             <img class="btn-img" src="~/images/details.png" alt="ver detalles de inquilino">
                         </button> *@
-                        <button class="button list-action-button danger-bg" onclick="confirmDelete('@user.Id')">
-                            <span class="tooltip hidden">Eliminar</span>
-                            <img class="btn-img" src="~/images/delete.png" alt="eliminar inquilino">
-                        </button>
+                        @if(Context.User.IsInRole("admin")){
+                            <button class="button list-action-button danger-bg" onclick="confirmDelete('@user.Id')">
+                                <span class="tooltip hidden">Eliminar</span>
+                                <img class="btn-img" src="~/images/delete.png" alt="eliminar inquilino">
+                            </button>
+                        }
                     </div>
                 </li>
             }
@@ -48,7 +50,7 @@
 </section>
 
 <section class="actions-section actions-section-hide section">
-    <form class="form hidden" action="" onsubmit="handleSubmit(event)" onkeyup="handleChange(event)">
+    <form autocomplete="off" class="form hidden" action="" onsubmit="handleSubmit(event)" onkeyup="handleChange(event)">
         <h2 class="form-title">title</h2>
         <div class="form-row">
             <label class="form-label" for="">Email</label>
@@ -181,10 +183,7 @@
     }
 
     function cancelAction(){
-        document.querySelector(".actions-section").classList.add("actions-section-hide")
-        document.querySelector(".form").classList.add("hidden");
-        document.querySelector(".confirm-delete").classList.add("hidden");
-        document.querySelector(".spinner").classList.remove("hidden");
+        hideModal();
         clearForm();
         removeErrorWatcher();
     }
