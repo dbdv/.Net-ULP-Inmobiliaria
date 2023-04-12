@@ -47,6 +47,7 @@
 .form-detail-field {
   padding: 0.3rem 1rem;
   width: 300px;
+  text-overflow: ellipsis;
 }
 
 .form-input-select {
@@ -64,6 +65,10 @@
   width: 600px;
 }
 
+.form-contracts.form-detail {
+  width: fit-content;
+}
+
 .form-detail>.form-title {
   text-align: left;
   padding-left: 2rem;
@@ -78,6 +83,10 @@
   color: black;
   border: none;
   width: 200px;
+}
+
+.contracts-details {
+  width: 400px;
 }
 
 .invalid:not(:focus)~.input-error,
@@ -173,13 +182,27 @@ input[type="number"] {
   background-color: white;
 }
 
+.options-modal {
+  max-height: 130px;
+  overflow-x: hidden;
+  overflow: auto;
+  overflow-x: hidden;
+  border: 1px solid;
+  z-index: 999;
+  /* max-width: max-content; */
+  width: 100%;
+  position: absolute;
+  top: 100%;
+}
+
 .option-span {
   padding: 0.3rem 1rem;
   cursor: pointer;
-  border: 1px solid transparent;
-  border-left-color: darkgray;
-  border-right-color: darkgray;
+  border-bottom: 1px solid transparent;
+  border-top: 1px solid transparent;
   background: white;
+  z-index: 9999;
+  display: flex;
 }
 
 .option-span:last-child {

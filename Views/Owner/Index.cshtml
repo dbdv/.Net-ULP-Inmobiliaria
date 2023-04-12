@@ -40,10 +40,12 @@
                             <span class="tooltip hidden">Editar</span>
                             <img class="btn-img" src="~/images/edit.png" alt="editar propietario">
                         </button>
-                        <button class="button list-action-button danger-bg" onclick="confirmDelete('@owner.Id')">
-                            <span class="tooltip hidden">Eliminar</span>
-                            <img class="btn-img" src="~/images/delete.png" alt="eliminar propietario">
-                        </button>
+                        @if(Context.User.IsInRole("admin")){
+                            <button class="button list-action-button danger-bg" onclick="confirmDelete('@owner.Id')">
+                                <span class="tooltip hidden">Eliminar</span>
+                                <img class="btn-img" src="~/images/delete.png" alt="eliminar propietario">
+                            </button>
+                        }
                     </div>
                 </li>
             }
@@ -52,7 +54,7 @@
 </section>
 
 <section class="actions-section actions-section-hide section">
-    <form onsubmit="handleSubmit(event)" class="form hidden">
+    <form autocomplete="off" onsubmit="handleSubmit(event)" class="form hidden">
         <h2 class="form-title">title</h2>
         <div class="form-row">
             <label class="form-label" for="">Nombre<sup>*</sup></label>
@@ -84,7 +86,7 @@
         </div>
     </form>
     
-    <form onsubmit="handleSubmit(event)" class="form-detail hidden">
+    <form autocomplete="off" onsubmit="handleSubmit(event)" class="form-detail hidden">
         <h2 class="form-title">Detalles</h2>
         <div class="form-row">
             <label class="form-label" for="">Nombre</label>
@@ -198,13 +200,9 @@
     }
 
     function cancelAction(){
-        document.querySelector(".actions-section").classList.add("actions-section-hide")
-        document.querySelector(".form").classList.add("hidden");
-        document.querySelector(".confirm-delete").classList.add("hidden");
-        document.querySelector(".spinner").classList.remove("hidden");
+        hideModal();
         clearForm();
         removeErrorWatcher();
-        delete_id = null;
     }
 
     function confirmDelete(id){

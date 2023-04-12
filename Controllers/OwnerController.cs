@@ -95,6 +95,7 @@ public class OwnerController : Controller
     }
 
     [HttpDelete]
+    [Authorize(Policy = "admin")]
     [Route(nameof(Owner) + "/delete")]
     // [ValidateAntiForgeryToken]
     public IActionResult Delete([FromQuery] int id)

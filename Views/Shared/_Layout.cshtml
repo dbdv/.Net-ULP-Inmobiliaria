@@ -10,7 +10,6 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Inmobiliaria Bustillos | @ViewData["Title"]</title>
-    @* <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" /> *@
     <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
     <link rel="stylesheet" href="~/testNetMVC.styles.css" asp-append-version="true" />
     <link rel="stylesheet" href="~/css/header.css" asp-append-version="true" />
@@ -22,6 +21,7 @@
     <link rel="stylesheet" href="~/css/spinner.css" asp-append-version="true" />
     <link rel="shortcut icon" href="~/favicon.ico" type="image/x-icon"/>
     <script src="~/js/header.js" defer asp-append-version="true" ></script>
+    <script src="~/js/site.js" defer asp-append-version="true" ></script>
     <script src="https://kit.fontawesome.com/dc8ad386a2.js" crossorigin="anonymous" asp-append-version="true" ></script>
 </head>
 <body>
@@ -45,8 +45,6 @@
                                 Ver todos
                             </a>
                         </li>
-                        <li class="menu-item" tabindex="4">Menu item 2</li>
-                        <li class="menu-item" tabindex="5">Menu item 3</li>
                     </ul>
                 </div>
                 <div class="menu-point-div" tabindex="6">
@@ -57,16 +55,6 @@
                                 Ver todos
                             </a>
                         </li>
-                        <li class="menu-item" tabindex="8">Menu item 2</li>
-                        <li class="menu-item" tabindex="10">Menu item 3</li>
-                    </ul>
-                </div>
-                <div class="menu-point-div" tabindex="11">
-                    <span class="menu-label">Contratos</span>
-                    <ul class="menu-ul">
-                        <li class="menu-item" tabindex="12">Menu item 1</li>
-                        <li class="menu-item" tabindex="13">Menu item 2</li>
-                        <li class="menu-item" tabindex="14">Menu item 3</li>
                     </ul>
                 </div>
                 <div class="menu-point-div" tabindex="15">
@@ -77,8 +65,16 @@
                                 Ver todos
                             </a>
                         </li>
-                        <li class="menu-item" tabindex="17">Menu item 2</li>
-                        <li class="menu-item" tabindex="18">Menu item 3</li>
+                    </ul>
+                </div>
+                <div class="menu-point-div" tabindex="11">
+                    <span class="menu-label">Contratos</span>
+                    <ul class="menu-ul">
+                        <li class="menu-item" tabindex="16">
+                            <a asp-action="Index" asp-controller=@nameof(Contract)>
+                                Ver todos
+                            </a>
+                        </li>
                     </ul>
                 </div>
                 @if(Context.User.IsInRole("admin")){
@@ -90,8 +86,6 @@
                                     Ver todos
                                 </a>
                             </li>
-                            <li class="menu-item" tabindex="21">Menu item 2</li>
-                            <li class="menu-item" tabindex="22">Menu item 3</li>
                         </ul>
                     </div>
                 }

@@ -9,7 +9,7 @@
 }
 
 <section class="section">
-    <form class="profile-form form" action="" onsubmit="handleSubmit(event)" onkeyup="handleChange(event)">
+    <form autocomplete="off" class="profile-form form" action="" onsubmit="handleSubmit(event)" onkeyup="handleChange(event)">
         <h2 class="form-title">Mis datos</h2>
         <div class="avatar-input-container">
             @{
@@ -137,10 +137,7 @@
     }
 
     function cancelAction(){
-        document.querySelector(".actions-section").classList.add("actions-section-hide")
-        document.querySelector(".form").classList.add("hidden");
-        document.querySelector(".confirm-delete").classList.add("hidden");
-        document.querySelector(".spinner").classList.remove("hidden");
+        hideModal();
         clearForm();
         removeErrorWatcher();
     }
