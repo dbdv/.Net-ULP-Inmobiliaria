@@ -1,0 +1,510 @@
+@using Microsoft.AspNetCore.Antiforgery
+@model List<Payment>
+@inject IAntiforgery antiforgery
+@{
+    ViewData["Title"] = "Pagos";
+
+    var token = antiforgery.GetAndStoreTokens(Context).RequestToken;
+    @* var renters = @Html.Raw(Json.Serialize(ViewBag.renters)); *@
+    @* var properties = @Html.Raw(Json.Serialize(ViewBag.properties)); *@
+    var contracts = @Html.Raw(Json.Serialize(ViewBag.contracts));
+
+}
+<section class="section">
+    <ul class="payments-list list">
+        <li class="payments-list-header list-header">
+            <div class="list-colum">
+                <span class="n-intern-column">@Html.DisplayNameFor(payment => payment[0].Id)</span>
+                <span class="payments-column">@Html.DisplayNameFor(payment => payment[0].Number)</span>
+                <span class="payments-column">@Html.DisplayNameFor(payment => payment[0].Amount)</span>
+                <span class="payments-column p-renter">@Html.DisplayNameFor(payment => payment[0].Contract.Renter_id)</span>
+                <span class="payments-column">@Html.DisplayNameFor(payment => payment[0].Date)</span>
+            </div>
+            <div class="action-buttons list-actions-column">
+                <button onclick="createForm()" class="new-btn create-btn">
+                    <img class="btn-img" src="~/images/new_contract.png" alt="Ingresar nuevo pago">
+                    nuevo
+                </button>
+            </div>
+        </li>
+        @{
+            foreach (var payment in Model)
+            {
+                <li class="payment-row list-row">
+                    <div class="list-colum">
+                        <span id="n-intern-header" class="n-intern-column">#@payment.Id</span>
+                        <span class="payments-column">@payment.Number</span>
+                        <span class="payments-column">$@payment.Amount</span>
+                        <span class="payments-column p-renter">@payment.Contract.Renter.ToString()</span>
+                        <span class="payments-column">@payment.getDate()</span>
+                    </div>
+                    <div class="action-buttons list-actions-column">
+                        <button class="button list-action-button details-bg" onclick="showPaymentDetail('@payment.Id')">
+                            <span class="tooltip hidden">Ver detalles</span>
+                            <img class="btn-img" src="~/images/details.png" alt="ver detalles de propietario">
+                        </button>
+                        @* <button class="button list-action-button edit-bg" onclick="updateForm('@payment.Id')">
+                            <span class="tooltip hidden">Editar</span>
+                            <img class="btn-img" src="~/images/edit.png" alt="editar propietario">
+                        </button> *@
+                        @if(Context.User.IsInRole("admin")){
+                            <button class="button list-action-button danger-bg" onclick="confirmDelete('@payment.Id')">
+                                <span class="tooltip hidden">Eliminar</span>
+                                <img class="btn-img" src="~/images/delete.png" alt="eliminar propietario">
+                            </button>
+                        }
+                    </div>
+                </li>
+            }
+        }
+    </ul>
+</section>
+
+<section class="actions-section actions-section-hide section">
+    <form autocomplete="off" onsubmit="handleSubmit(event)" class="form hidden">
+        <h2 class="form-title">title</h2>
+        <div class="form-row">
+            <label class="form-label" for="">@Html.DisplayNameFor(payment=>payment[0].Contract_id)<sup>*</sup></label>
+            <div class="contracts-options-div">
+                <input 
+                    onkeyup="handleContractsSuggestions(event)"  
+                    onclick="addErrorWatcher(event)" 
+                    onfocus="addErrorWatcher(event)" 
+                    onfocusout="checkInputs()" 
+                    id="contract-input" 
+                    name="contract_id" 
+                    class="form-input suggestions" 
+                    type="text" 
+                    required>
+                <span class="input-error">Campo obligatorio</span>
+                <div class="contracts-options-modal options-modal hidden"></div>
+            </div>
+        </div>
+        <div class="form-row">
+            <label class="form-label">@Html.DisplayNameFor(payment=>payment[0].Amount)<sup>*</sup></label>
+            <div class="">
+                <input 
+                    onkeyup="handleChange(event)"  
+                    onclick="addErrorWatcher(event)" 
+                    onfocus="addErrorWatcher(event)" 
+                    onfocusout="checkInputs()" 
+                    id="amount-input" 
+                    name="amount" 
+                    class="form-input suggestions" 
+                    type="number" 
+                    required
+                >
+                <span class="input-error">Campo obligatorio</span>
+            </div>
+        </div>
+        <div class="form-buttons">
+            <button class="confirm-btn disabled-btn" id="create-payment-button" disabled></button>
+            <button class="cancel-payment-button" onclick="cancelAction()">Cancelar</button>
+        </div>
+    </form>
+
+    <form autocomplete="off" onsubmit="handleSubmit(event)" class="form-payments form-detail hidden">
+        <h2 class="form-title">Detalles</h2>
+        <div class="form-row">
+            <label class="form-label" for="">@Html.DisplayNameFor(payment=>payment[0].Date)</label>
+            <input
+                disabled 
+                id="date-detail-input" 
+                class="form-input suggestions form-detail-field payments-details" 
+                type="text" 
+            >
+        </div>
+        <div class="form-row">
+            <label class="form-label" for="">@Html.DisplayNameFor(payment=>payment[0].Amount)</label>
+            <input
+                disabled 
+                id="amount-detail-input" 
+                class="form-input suggestions form-detail-field payments-details" 
+                type="text" 
+            >
+        </div>
+        <div class="form-row">
+            <label class="form-label" for="">@Html.DisplayNameFor(payment=>payment[0].Contract_id)</label>
+            <input
+                disabled 
+                id="contract-detail-input" 
+                class="form-input suggestions form-detail-field payments-details" 
+                type="text" 
+            >
+        </div>
+        <div class="form-row">
+            <label class="form-label" for="">@Html.DisplayNameFor(payment=>payment[0].Contract.Renter_id)</label>
+            <input
+                disabled 
+                id="renter-detail-input" 
+                class="form-input suggestions form-detail-field payments-details" 
+                type="text" 
+            >
+        </div>
+        <div class="form-row">
+            <label class="form-label" for="">@Html.DisplayNameFor(payment=>payment[0].Number)</label>
+            <input
+                disabled 
+                id="number-detail-input" 
+                class="form-input suggestions form-detail-field payments-details" 
+                type="text" 
+            >
+        </div>
+        <div class="form-row">
+                <label class="form-label">@Html.DisplayNameFor(payment=>payment[0].Contract.Property_id)</label>
+                <input
+                    disabled 
+                    onfocusout="checkInputs()" 
+                    id="address-detail-input" 
+                    class="form-input suggestions form-detail-field payments-details" 
+                    type="text" required
+                >
+        </div>
+        <div class="form-row">
+                <label class="form-label">@Html.DisplayNameFor(payment=>payment[0].Contract.Property.Type_id)</label>
+                <input
+                    disabled 
+                    id="type-detail-input" 
+                    class="form-input suggestions form-detail-field payments-details" 
+                >
+        </div>
+        <img class="close-details-img" src="~/images/close_icon.png" onclick="hideActions()">
+    </form>
+
+    <div class="confirm-delete confirm-dialog hidden">
+        <span>Está seguro que desea eliminar?</span>
+        <div class="buttons">
+            <button class="delete-btn">Eliminar</button>
+            <button class="cancel-btn" onclick="cancelAction()">Cancelar</button>
+        </div>
+    </div>
+
+    <div class="spinner"></div>
+
+    <div class="toast error-toast hidden">
+        <span class="toast-title error-type"></span>
+        <span class="toast-info error-msg"></span>
+    </div>
+
+</section>
+@section Scripts{
+        <script>
+            document.body.addEventListener('keydown', (e)=>{
+                if(e.key === "Escape") {
+                    hideActions();
+                }
+            });
+
+            const default_body = {
+                date: null,
+                amount: null,
+                contract_id: null
+            };
+
+            let payment_body_data = default_body;
+
+
+            function handleSubmit(e){
+                e.preventDefault();
+            }
+
+            function handleChange(event){
+                const key = event.target.name;
+                if(key == 'amount'){
+                    if(Number.isNaN(parseInt(event.target.value.trim()))){
+                        event.target.value = payment_body_data[key] ?? '';
+                        return;
+                    }
+                        payment_body_data[key] = parseInt(event.target.value.trim());
+                }else{
+                    payment_body_data[key] = event.target.value.trim();
+                }
+                checkInputs();
+            }
+
+            function handleContractsSuggestions(e){
+                const keyword = document.querySelector("#contract-input").value;
+                const options_div = document.querySelector(".contracts-options-modal");
+                options_div.innerHTML = '';
+                payment_body_data.contract_id = null;
+                if(keyword.trim().length > 2){
+                    const matches = (@contracts).filter(item=>{
+                        return keyword
+                                .toLowerCase()
+                                .split(" ")
+                                .filter(word=> word.length > 2)
+                                .some(
+                                    word => (`${item.id} ${item.property.address} ${item.renter.first_name} ${item.renter.last_name} ${item.renter.dni}`)
+                                    .toLowerCase()
+                                    .includes(word)
+                                )
+                    })
+
+                    if(matches.length)
+                        options_div.classList.remove("hidden")
+
+                    matches.forEach((match,index)=>{
+                        const span = document.createElement('span');
+                        span.id = match.id;
+                        span.classList.add("option-span");
+                        span.setAttribute('tabindex', index * 100);
+                        span.innerText = `#${match.id} Dir:${match.property.address} Inquilino: ${match.renter.first_name} ${match.renter.last_name} ${match.renter.dni}`;
+                        span.addEventListener('click', ()=>{
+                            payment_body_data.contract_id = match.id;
+                            document.querySelector("#contract-input").value = span.innerText
+                            document.querySelector("#contract-input").setAttribute('isvalid', true);
+                            options_div.classList.add("hidden")
+                            document.querySelector("#contract-input").classList.remove('invalid');
+                            checkInputs();
+                        })
+                        span.addEventListener('keydown', ()=>{
+                            payment_body_data.contract_id = match.id;
+                            document.querySelector("#contract-input").value = span.innerText
+                            document.querySelector("#contract-input").setAttribute('isvalid', true);
+                            options_div.classList.add("hidden")
+                            document.querySelector("#contract-input").classList.remove('invalid');
+                            checkInputs();
+                        })
+                        options_div.appendChild(span);
+                    })
+                }else{
+                    options_div.classList.add("hidden")
+                }
+                if(!payment_body_data.owner_id)
+                    document.querySelector("#contract-input").classList.add('invalid');
+                checkInputs();
+            }
+
+            function checkInputs(){
+                if( payment_body_data.amount != null 
+                    && payment_body_data.contract_id != null
+                    && parseInt(payment_body_data.amount) > 0
+                    && parseInt(payment_body_data.contract_id) > 0
+                ){
+                    document.querySelector("#create-payment-button").removeAttribute("disabled"); 
+                    document.querySelector("#create-payment-button").classList.remove("disabled-btn");
+                    return true;
+                }else{
+                    document.querySelector("#create-payment-button").setAttribute("disabled", "");
+                    document.querySelector("#create-payment-button").classList.add("disabled-btn");
+                    return false;
+                }
+            }
+
+            function clearForm(){
+                payment_body_data = default_body;
+                document.querySelector("#contract-input").value= '';
+                document.querySelector("#amount-input").value='';
+                document.querySelector(".error-toast").classList.add("hidden");
+                document.querySelector("#create-payment-button")?.removeEventListener("click",()=>{sendCreateReq()});
+            }
+
+            function showActions(){
+                document.querySelector(".actions-section").classList.remove("actions-section-hide")
+            }
+
+            function hideActions(){
+                document.querySelector(".actions-section").classList.add("actions-section-hide")
+                document.querySelector(".form").classList.add("hidden");
+                document.querySelector(".form-detail").classList.add("hidden");
+                document.querySelector(".confirm-delete").classList.add("hidden");
+                document.querySelector(".spinner").classList.remove("hidden");
+                document.querySelector(".error-toast").classList.add("hidden");
+            }
+
+            function cancelAction(){
+                clearForm();
+                removeErrorWatcher();
+                hideModal();
+            }
+
+            function confirmDelete(id){
+                document.querySelector(".spinner").classList.add("hidden");
+                document.querySelector(".confirm-delete").classList.remove("hidden");
+                document.querySelector(".delete-btn").addEventListener("click", ()=>{deletecontract(id)})
+                showActions();
+            }
+
+            function deletePayment(id){
+                document.querySelector(".confirm-delete").classList.add("hidden");
+                document.querySelector(".spinner").classList.remove("hidden");
+
+                if(id !== null){
+                    fetch(`${base_url}payment/${id}`, {
+                        method: "DELETE",
+                        headers:{
+                            "Content-Type": "application/json",
+                            "RequestVerificationToken": "@token"
+                        },
+                    }).then(res=>{
+                        if(res.status != 200)
+                            showError("Error", "No se pudo eliminar el pago, intenta nuevamente.");
+                        if(res.redirected)
+                            window.location.href =res.url;
+
+                    }).catch(e=>{
+                        console.error(e);
+                    })
+                }
+            }
+
+            function createForm(){
+                showActions();
+                document.querySelector(".form-title").innerHTML = "Nuevo contrato";
+                document.querySelector("#create-payment-button").innerHTML = "Agregar";
+                document.querySelector("#create-payment-button").addEventListener("click", ()=>{sendCreateReq()});
+                document.querySelector(".spinner").classList.add("hidden");
+                document.querySelector(".form").classList.remove("hidden");
+            }
+
+            function updateForm(payment_id){
+
+                showActions();
+
+                fetch(`${base_url}payment/${parseInt(payment_id)}`, {
+                    headers:{
+                        "RequestVerificationToken": "@token"
+                    }
+                }).then(res=>res.json()).then(data=>{
+                    console.log(data);
+                    setCurrentcontractData(data)
+                    document.querySelector(".spinner").classList.add("hidden");
+                    document.querySelector(".form").classList.remove("hidden");
+                }).catch(e=>{
+                    console.error(e);
+                })
+                document.querySelector(".form-title").innerHTML = "Actualizar datos de inquilino";
+                document.querySelector("#create-payment-button").innerHTML = "Actualizar";
+            }
+
+            function setCurrentcontractData(payment){
+                payment_body_data = {...payment};
+                document.querySelector("#property-input").value
+                    = `${payment.contract.property.address} | Tipo: ${payment.contract.property.propType.label} | Dueño: ${payment.contract.property.owner.first_name} | ${payment.contract.property.owner.last_name} | Hab: ${payment.contract.property.rooms}`;
+                document.querySelector("#renter-input").value 
+                    = `${payment.renter.first_name} ${payment.renter.last_name} DNI: ${payment.renter.dni}`;
+                document.querySelector("#from-input").value=payment.from.split("T")[0];
+                document.querySelector("#until-input").value=payment.until.split("T")[0];
+                document.querySelector("#fee-input").value=payment.fee;
+                document.querySelector("#create-payment-button").addEventListener("click", ()=>{sendUpdateReq(payment.id)});
+            }
+
+            function displayPaymentInfo(payment){
+                console.log(payment);
+                document.querySelector("#address-detail-input").value = `${payment.contract.property.address}`;
+                document.querySelector("#type-detail-input").value = `${payment.contract.property.propType.label}`;
+                document.querySelector("#renter-detail-input").value 
+                    = `${payment.contract.renter.first_name} ${payment.contract.renter.last_name} DNI: ${payment.contract.renter.dni}`;
+                document.querySelector("#number-detail-input").value = `#${payment.id}`;
+                document.querySelector("#contract-detail-input").value = `#${payment.contract.id}`;
+                document.querySelector("#amount-detail-input").value = `#${payment.amount}`;
+                document.querySelector("#date-detail-input").value = `#${payment.date.split('T')[0].split('-').reverse().join('-')}`;
+            }
+
+            function showPaymentDetail(id){
+
+                showActions();
+
+                fetch(`${base_url}payment/${parseInt(id)}`, {
+                    headers:{
+                        "RequestVerificationToken": "@token"
+                    }
+                }).then(res=>res.json()).then(data=>{
+                    if(!data)
+                        return showError("Error", "No se pudo acceder a los datos del pago, intenta nuevamente.", ()=>{
+                            hideActions();
+                        });
+                    displayPaymentInfo(data);
+                    document.querySelector(".spinner").classList.add("hidden");
+                    document.querySelector(".form-detail").classList.remove("hidden");
+                }).catch(e=>{
+                    console.error(e);
+                })
+            }
+
+            function sendCreateReq(){
+
+                payment_body_data.date = (new Date()).toLocaleString().split(',')[0];
+
+                if(!checkInputs())
+                    return showError('Datos inválidos', 'No completó todos los campos correctamente!"');
+                document.querySelector(".form").classList.add("hidden");
+                document.querySelector(".spinner").classList.remove("hidden");
+                console.log(payment_body_data);
+                fetch(`${base_url}payment`, {
+                        method: "POST",
+                        headers:{
+                            "Content-Type": "application/json",
+                            "RequestVerificationToken": "@token"
+                        },
+                        body: JSON.stringify(payment_body_data),
+                    }).then(res=>{
+                        if(res.status != 200)
+                            showError("Error", "No se pudo crear el pago, intenta nuevamente.", ()=>{
+                                document.querySelector(".form").classList.remove("hidden");
+                            });
+                        if(res.redirected)
+                            window.location.href =res.url;
+
+                    }).catch(e=>{
+                        console.error(e);
+                })
+            }
+
+            function sendUpdateReq(id){
+
+                document.querySelector(".form").classList.add("hidden");
+                document.querySelector(".spinner").classList.remove("hidden");
+
+                fetch(`${base_url}payment/${id}`, {
+                        method: "PUT",
+                        headers:{
+                            "Content-Type": "application/json",
+                            "RequestVerificationToken": "@token"
+                        },
+                        body: JSON.stringify(payment_body_data),
+                    }).then(res=>{
+                        if(res.status != 200)
+                            showError("Error", "No se pudo actualizar el pago, intenta nuevamente.", ()=>{
+                                document.querySelector(".form").classList.remove("hidden");
+                            });
+                        if(res.redirected)
+                            window.location.href =res.url;
+
+                    }).catch(e=>{
+                        console.error(e);
+                })
+            }
+
+            function addErrorWatcher(event){
+                event.target.classList.add("error-watcher");
+            }
+
+            function removeErrorWatcher(){
+                document.querySelectorAll(".error-watcher").forEach(input=>{
+                    input.classList.remove("error-watcher");
+                })
+            }
+
+            function removeDeleteListener(){
+                document.querySelector(".delete-btn").removeEventListener("click", deletecontract)
+            }
+
+            function showError(type, msg, effect = null){
+                document.querySelector(".spinner").classList.add("hidden");
+                document.querySelector(".error-toast").classList.remove("hidden");
+                document.querySelector(".error-type").innerHTML = type;
+                document.querySelector(".error-msg").innerHTML = msg;
+                setTimeout(()=>{
+                    closeToast(effect);
+                }, 3.5 * 1000)
+            }
+
+            function closeToast(effect = null){
+                document.querySelector(".error-toast").classList.add("hidden");
+                document.querySelector(".error-type").innerHTML = '';
+                document.querySelector(".error-msg").innerHTML = '';
+                if(effect) effect();
+            }
+        </script>
+}
