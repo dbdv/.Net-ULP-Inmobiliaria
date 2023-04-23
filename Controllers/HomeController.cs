@@ -33,29 +33,29 @@ public class HomeController : Controller
     [Route("/login")]
     public async Task<IActionResult> Login([FromBody] UserBody userBody)
     {
-        if (userBody.email == string.Empty || userBody.password == string.Empty)
+        if (userBody.Email == string.Empty || userBody.Password == string.Empty)
             return BadRequest();
 
         //---------------------------------------------
-        var dbUser = userRepo.getByEmail(userBody.email);
+        var dbUser = userRepo.getByEmail(userBody.Email);
 
         if (dbUser == null)
         {
             return NotFound();
         }
 
-        string hashed = Models.User.getHashPassword(userBody.password);
+        string hashed = Models.User.getHashPassword(userBody.Password);
 
         if (dbUser.Password != hashed)
         {
             return NotFound();
         }
         var claims = new List<Claim>
-                            {
-                                new Claim(ClaimTypes.Name, dbUser.Email),
-                                new Claim(ClaimTypes.Role, dbUser.Role.Label),
-                                new Claim(type: "UserId", value: dbUser.Id.ToString()),
-                            };
+        {
+            new Claim(ClaimTypes.Name, dbUser.Email),
+            new Claim(ClaimTypes.Role, dbUser.Role.Label),
+            new Claim(type: "UserId", value: dbUser.Id.ToString()),
+        };
 
         var claimsIdentity = new ClaimsIdentity(claims, CookieAuthenticationDefaults.AuthenticationScheme);
 

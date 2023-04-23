@@ -35,6 +35,24 @@ public class PropertyController : Controller
 
         return View(properties);
     }
+    
+    [HttpGet]
+    [Route("Property/ByOwner/{id}")]
+    public IActionResult getByOwner(int id)
+    {
+        OwnerRepository owner_repo = new OwnerRepository();
+        RenterRepository renter_repo = new RenterRepository();
+
+        List<Property>? properties = propertyRepository.getAllByOwner(id);
+        ViewBag.types = propertyRepository.getPropTypes();
+        ViewBag.purposes = propertyRepository.getPurposes();
+        ViewBag.owners = owner_repo.getAll();
+        ViewBag.owner = owner_repo.get(id);
+
+        if (properties is null) return View("loginError");
+
+        return View("Property", properties);
+    }
 
     [HttpGet]
     // [ValidateAntiForgeryToken]

@@ -169,6 +169,80 @@ namespace testNetMVC.Repositories
 
             return properties;
         }
+        
+        public List<Property>? getAllByOwner(int id)
+        {
+            List<Property>? properties = new List<Property> { };
+            Console.WriteLine($"---Retriving all properties for owner id {id}");
+
+            try
+            {
+                using (MySqlConnection connection = new MySqlConnection(_connecString))
+                {
+                    string sql = @"SELECT props.id id, address, rooms, latitude, longitude, price,
+                    purpose_id, description,
+                    type_id, label,
+                    owner_id, dni, email, first_name, last_name, phone
+                    FROM properties props
+                    JOIN owners ON owners.id = props.owner_id
+                    JOIN purposes ON purposes.id = props.purpose_id
+                    JOIN types ON types.id = props.type_id
+                    WHERE owners.id = @owner_id;";
+
+                    using (MySqlCommand command = new MySqlCommand(sql, connection))
+                    {
+                        command.CommandType = System.Data.CommandType.Text;
+                        command.Parameters.AddWithValue("@owner_id", id);
+                        connection.Open();
+                        var reader = command.ExecuteReader();
+                        while (reader.Read())
+                        {
+                            var property = new Property
+                            {
+                                Id = reader["id"].ToString() != null ? Int32.Parse(reader["id"].ToString()!) : null,
+                                Address = reader["address"].ToString(),
+                                Rooms = Convert.ToInt32(reader["rooms"]),
+                                Price = Convert.ToDouble(reader["price"]),
+                                Latitude = reader["latitude"] != DBNull.Value ? Convert.ToDouble(reader["latitude"]) : null,
+                                Longitude = reader["longitude"] != DBNull.Value ? Convert.ToDouble(reader["longitude"]) : null,
+                                Owner_id = Convert.ToInt32(reader["owner_id"].ToString()),
+                                Owner = new Owner
+                                {
+                                    Dni = reader["dni"].ToString(),
+                                    Email = reader["email"].ToString(),
+                                    First_name = reader["first_name"].ToString(),
+                                    Last_name = reader["last_name"].ToString(),
+                                    Id = Convert.ToInt32(reader["owner_id"].ToString()),
+                                    // Phone = reader["phone"].ToString(),
+                                },
+                                Purpose_id = Convert.ToInt32(reader["purpose_id"].ToString()),
+                                Purpose = new Purpose
+                                {
+                                    Id = Convert.ToInt32(reader["purpose_id"].ToString()),
+                                    Description = reader["description"].ToString()
+                                },
+                                Type_id = Convert.ToInt32(reader["type_id"].ToString()),
+                                PropType = new PropType
+                                {
+                                    Id = Convert.ToInt32(reader["type_id"].ToString()),
+                                    Label = reader["label"].ToString(),
+                                }
+                            };
+
+                            properties.Add(property);
+                        }
+                        connection.Close();
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("---Error retriving all properties " + ex);
+                return null;
+            }
+
+            return properties;
+        }
 
         public int create(Property property)
         {

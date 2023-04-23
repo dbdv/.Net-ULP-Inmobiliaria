@@ -18,6 +18,10 @@
 ></script> *@
 
 <section class="section">
+    @if(ViewBag.owner != null)
+    {
+        <div class="filter"></div>
+    }
     <ul class="renters-list list">
         <li class="renter-list-header list-header">
             <div class="list-colum">

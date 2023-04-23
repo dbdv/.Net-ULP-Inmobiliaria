@@ -17,6 +17,7 @@ public class UserController : Controller
 {
     private readonly IDictionary<string, string> accionsTempMsgs = new Dictionary<string, string>{
         {"created","Usuario creado correctamente."},
+        {"updated","Usuario actualizado correctamente."},
     };
     private readonly ILogger<UserController> _logger;
     private UserRepository userRepo = new UserRepository();
@@ -30,10 +31,10 @@ public class UserController : Controller
     [Route("users-managment")]
     public IActionResult Index()
     {
-        ViewBag.users = userRepo.getAll();
+        var users = userRepo.getAll();
+        ViewBag.users = users != null ? users : new List<User> { };
         ViewBag.roles = userRepo.getRoles();
 
-        var testPath = Environment.CurrentDirectory;
         return View();
     }
 
@@ -50,6 +51,16 @@ public class UserController : Controller
     {
         var users = userRepo.getAll();
         return Json(users);
+    }
+    
+    [HttpGet]
+    [Authorize(Policy = "admin")]
+    [Route("users/{id}")]
+    public IActionResult getOne(int id)
+    {
+        var user = userRepo.get(id);
+        user.Password = null;
+        return Json(user);
     }
 
     [HttpPost]
@@ -70,13 +81,13 @@ public class UserController : Controller
             return Error();
 
         TempData["ProcessMsg"] = accionsTempMsgs["created"];
-        return Redirect("/users");
+        return Redirect("/users-managment");
     }
 
     [HttpPost]
     [Authorize]
     [Route("users/update")]
-    public IActionResult updateUser(UpdateUserBody user)
+    public IActionResult updateProfile(UserBody user)
     {
         int userId = Convert.ToInt32(User.FindFirstValue("UserId"));
         user.Id = userId;
@@ -121,16 +132,32 @@ public class UserController : Controller
             user.Avatar = null;
             user.AvatarUrl = null;
         }
-        Console.WriteLine("esta fuera de avatarURl empty");
-        Console.WriteLine(user.AvatarUrl);
-        Console.WriteLine(user.AvatarUrl == string.Empty);
 
-        int updated = userRepo.update(user);
+        int updated = userRepo.updateProfile(user);
         if (updated == -1)
             return Error();
 
         TempData["ProcessMsg"] = accionsTempMsgs["created"];
         return Redirect("/profile");
+    }
+
+    [HttpPut]
+    [Authorize(Policy = "admin")]
+    [Route("users/{id}")]
+    public IActionResult updateUser([FromBody]UserBody user, int id)
+    {
+        user.Id = id;
+        var currentUserData = userRepo.get(id);
+
+        if (user.Password == null || user.Password == String.Empty)
+            user.Password = currentUserData.Password;
+
+        int updated = userRepo.update(user);
+        if (updated == -1)
+            return Error();
+
+        TempData["ProcessMsg"] = accionsTempMsgs["updated"];
+        return Redirect("/users-managment");
     }
 
     [HttpPost]

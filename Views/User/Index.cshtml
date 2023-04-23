@@ -12,7 +12,9 @@
             <div class="list-colum">
                 <span id="n-intern-header" class="n-intern-column">N° interno</span>
                 <span class="email-column">Email</span>
-                <span>Rol</span>
+                <span class="email-column">Rol</span>
+                <span class="email-column">Nombre</span>
+                <span class="email-column">Apellido</span>
             </div>
             <div class="action-buttons list-actions-column">
                 @* <span>Acciones</span> *@
@@ -23,25 +25,28 @@
             </div>
         </li>
         @{
-            foreach (var user in (List<User>) ViewBag.users)
+            foreach (var user in ((List<User>)ViewBag.users))
             {
                 <li class="user-row list-row">
                     <div class="list-colum">
                         <span class="n-intern-column">#@user.Id</span>
                         <span class="email-column">@user.ToString()</span>
-                        <span>@user.Role.getRole()</span>
+                        <span class="email-column">@user.Role.getRole()</span>
+                        <span class="email-column">@user.FirstName</span>
+                        <span class="email-column">@user.LastName</span>
                     </div>
                     <div class="action-buttons list-actions-column">
-                        @* <button class="button list-action-button details-bg" onclick="showOwnerDetail('@user.Id')">
-                            <span class="tooltip hidden">Ver detalles</span>
-                            <img class="btn-img" src="~/images/details.png" alt="ver detalles de inquilino">
-                        </button> *@
-                        @if(Context.User.IsInRole("admin")){
-                            <button class="button list-action-button danger-bg" onclick="confirmDelete('@user.Id')">
-                                <span class="tooltip hidden">Eliminar</span>
-                                <img class="btn-img" src="~/images/delete.png" alt="eliminar inquilino">
-                            </button>
-                        }
+                    @if (Context.User.IsInRole("admin"))
+                    {
+                        <button class="button list-action-button edit-bg" onclick="updateForm('@user.Id')">
+                            <span class="tooltip hidden">Editar</span>
+                            <img class="btn-img" src="~/images/edit.png" alt="editar inquilino">
+                        </button>
+                        <button class="button list-action-button danger-bg" onclick="confirmDelete('@user.Id')">
+                            <span class="tooltip hidden">Eliminar</span>
+                            <img class="btn-img" src="~/images/delete.png" alt="eliminar inquilino">
+                        </button>
+                    }
                     </div>
                 </li>
             }
@@ -59,18 +64,28 @@
         </div>
         <div class="form-row">
             <label class="form-label" for="">Contraseña</label>
-            <input class="form-input" name="password" type="text" id="password-input" onchange="checkInputs()" onfocus="addErrorWatcher(event)">
+            <input class="form-input" name="password" type="password" id="password-input" onchange="checkInputs()" onfocus="addErrorWatcher(event)">
             <span class="input-error">Campo obligatorio</span>
         </div>
         <div class="form-row">
             <label class="form-label" for="">Rol</label>
             <select class="form-input" name="role_id" id="role-input" onchange="handleChange(event)" onfocus="addErrorWatcher(event)">
                 <option value="null">--Selecciona un rol--</option>
-                @foreach (var role in (List<Role>) ViewBag.roles)
+                @foreach (var role in (List<Role>)ViewBag.roles)
                 {
                     <option value=@role.Id>@role.getRole()</option>
                 }
             </select>
+            <span class="input-error">Campo obligatorio</span>
+        </div>
+        <div class="form-row">
+            <label class="form-label" for="">Nombre</label>
+            <input class="form-input" name="first_name" onchange="handleChange(event)" type="text" id="first-name-input" onchange="checkInputs()" onfocus="addErrorWatcher(event)">
+            <span class="input-error">Campo obligatorio</span>
+        </div>
+        <div class="form-row">
+            <label class="form-label" for="">Apellido</label>
+            <input class="form-input" name="last_name" onchange="handleChange(event)" type="text" id="last-name-input" onchange="checkInputs()" onfocus="addErrorWatcher(event)">
             <span class="input-error">Campo obligatorio</span>
         </div>
         <div class="form-buttons">
@@ -97,10 +112,18 @@
 
 <script>
 
+    document.body.addEventListener('keydown', (e)=>{
+        if(e.key === "Escape") {
+            cancelAction();
+        }
+    });
+
     const defaultUserBody = {
         email: null,
         password: null,
         role_id: null,
+        first_name: null,
+        last_name: null,
     }
 
     let userBody = defaultUserBody;
@@ -121,19 +144,36 @@
     function sendUser(){
         fetch(`${base_url}users`, {
             method: 'POST',
-            body: JSON.stringify(userBody),
+            body: JSON.stringify({...userBody, firstName: userBody.first_name, lastName: userBody.last_name}),
             headers:{
                 'Content-Type': 'application/json',
                 "RequestVerificationToken": "@token",
             }
         }).then(res=>{
             if(res.status != 200)
-                    @* showError("Error", "No se pudo crear el usuario, intenta nuevamente."); *@
-                if(res.redirected)
-                    window.location.href =res.url;
+                showError("Error", "No se pudo crear el usuario, intenta nuevamente.");
+            if(res.redirected)
+                window.location.href =res.url;
         }).catch(e=>console.error(e));    
     }
     
+    function sendUpdateUser(id){
+        console.log(userBody);
+        fetch(`${base_url}users/${id}`, {
+            method: 'PUT',
+            body: JSON.stringify({...userBody, firstName: userBody.first_name, lastName: userBody.last_name}),
+            headers:{
+                'Content-Type': 'application/json',
+                "RequestVerificationToken": "@token",
+            }
+        }).then(res=>{
+            if(res.status != 200)
+                showError("Error", "No se pudo actualizar el usuario, intenta nuevamente.");
+            if(res.redirected)
+                window.location.href =res.url;
+        }).catch(e=>console.error(e));    
+    }
+
     function deleteUser(id){
         fetch(`${base_url}users/${id}`, {
             method: 'DELETE',
@@ -146,7 +186,7 @@
                 showError("Error", "No se pudo crear el usuario, intenta nuevamente.", ()=>{document.querySelector(".confirm-delete").classList.remove("hidden");});
             }
             if(res.redirected)
-                window.location.href =res.url;
+                window.location.href = res.url;
         }).catch(e=>console.error(e));    
     }
 
@@ -167,10 +207,16 @@
     function clearForm(){
         document.querySelector("#password-input").value='';
         document.querySelector("#email-input").value='';
+        document.querySelector("#first-name-input").value='';
+        document.querySelector("#last-name-input").value='';
         document.querySelector("#role-input").value=null;
         document.querySelector(".error-toast").classList.add("hidden");
+        document.querySelector("#email-input").removeAttribute('disabled');
         userBody = defaultUserBody;
         document.querySelector("#send-button").removeEventListener("click",()=>{sendUser()});
+        document.querySelectorAll(".form-input").forEach(elem=>{
+                elem.addEventListener('change',()=> {checkInputs()});
+            })
     }
 
     function createForm(){
@@ -180,6 +226,44 @@
         document.querySelector("#send-button").addEventListener("click", ()=>{sendUser()});
         document.querySelector(".spinner").classList.add("hidden");
         document.querySelector(".form").classList.remove("hidden");
+    }
+    
+    function updateForm(id){
+        showActions();
+        document.querySelector(".spinner").classList.remove("hidden");
+        fetch(`${base_url}users/${id}`, {
+            method: 'GET',
+            headers:{
+                'Content-Type': 'application/json',
+                "RequestVerificationToken": "@token",
+            }
+        }).then(res=>{
+            if(res.status != 200){
+                showError("Error", "No se pudo obtener la información del usuario, intenta nuevamente.", cancelAction);
+            }
+            return res.json();
+        }).then( userInfo => {
+            userBody = {
+                email: userInfo.email,
+                first_name: userInfo.firstName,
+                last_name: userInfo.lastName,
+                role_id: userInfo.role_id,
+                password: null
+            };
+            document.querySelectorAll(".form-input").forEach(elem=>{
+                elem.addEventListener('change',()=> checkInputs(true));
+            })
+            document.querySelector("#email-input").value=userInfo.email;
+            document.querySelector("#email-input").setAttribute('disabled', true);
+            document.querySelector("#first-name-input").value=userInfo.firstName;
+            document.querySelector("#last-name-input").value=userInfo.lastName;
+            document.querySelector("#role-input").value=userInfo.role_id;
+            document.querySelector(".form-title").innerHTML = "Actualizar usuario";
+            document.querySelector("#send-button").innerHTML = "Actualizar";
+            document.querySelector("#send-button").addEventListener("click", ()=>{sendUpdateUser(userInfo.id)});
+            document.querySelector(".spinner").classList.add("hidden");
+            document.querySelector(".form").classList.remove("hidden");
+        }).catch(e=>console.error(e));  
     }
 
     function cancelAction(){
@@ -216,9 +300,11 @@
         showActions();
     }
 
-    function checkInputs(){
+    function checkInputs(updating=null){
         if( userBody.email?.length > 5 &&
-            userBody.password?.length > 0 &&
+            (userBody.password?.length > 0 || updating)&&
+            userBody.first_name?.length > 0 &&
+            userBody.last_name?.length > 0 &&
             userBody.role_id != null &&
             userBody.role_id > 0
         ){
