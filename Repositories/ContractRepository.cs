@@ -489,7 +489,7 @@ namespace testNetMVC.Repositories
                     {
                         command.Parameters.AddWithValue("@contract_id", payment.Contract_id);
                         connection.Open();
-                        number = Convert.ToInt32(command.ExecuteScalar()) + 1;
+                        number = command.ExecuteScalar() != DBNull.Value ? Convert.ToInt32(command.ExecuteScalar()) + 1 : 1;
                         connection.Close();
                     }
                 }

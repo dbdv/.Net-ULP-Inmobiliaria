@@ -14,6 +14,10 @@ namespace testNetMVC.Models
         // [Required]
         [Display(Name = "Contraseña")]
         public string? Password { get; set; }
+        [Display(Name = "Nombre")]
+        public string? FirstName { get; set; }
+        [Display(Name = "Apellido")]
+        public string? LastName { get; set; }
         public string? Avatar { get; set; }
         public int? Role_id { get; set; }
 

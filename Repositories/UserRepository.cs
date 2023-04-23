@@ -28,13 +28,12 @@ namespace testNetMVC.Repositories
             {
                 using (MySqlConnection connection = new MySqlConnection(_connecString))
                 {
-                    string sql = $"SELECT users.id id, email, password, avatar, role_id, label FROM users JOIN roles ON roles.id=role_id WHERE email='{email}';";
-                    // string sql = @"SELECT email, password, avatar, role_id, label FROM users JOIN roles ON roles.id=role_id WHERE email='@email';";
+                    string sql = $"SELECT users.id id, email, password, avatar, role_id, label, first_name, last_name FROM users JOIN roles ON roles.id=role_id WHERE email='{email}';";
                     using (MySqlCommand command = new MySqlCommand(sql, connection))
                     {
 
                         command.CommandType = System.Data.CommandType.Text;
-                        command.Parameters.AddWithValue("@email", email);
+                        command.Parameters.AddWithValue("@email", email.ToString());
                         Console.WriteLine("---Executing query: \n\n\t" + command.CommandText.Replace("@email", email) + "\n");
                         connection.Open();
 
@@ -47,6 +46,8 @@ namespace testNetMVC.Repositories
                                 Avatar = reader["avatar"] != DBNull.Value ? reader["avatar"].ToString() : null,
                                 Email = reader["email"].ToString(),
                                 Password = reader["password"].ToString(),
+                                FirstName = reader["first_name"].ToString(),
+                                LastName = reader["last_name"].ToString(),
                                 Role_id = Convert.ToInt32(reader["role_id"]),
                                 Role = new Role
                                 {
@@ -82,7 +83,7 @@ namespace testNetMVC.Repositories
                 using (MySqlConnection connection = new MySqlConnection(_connecString))
                 {
                     string sql = @"
-                    SELECT users.id id, email, password, avatar, role_id, label
+                    SELECT users.id id, email, password, avatar, role_id, label, first_name, last_name
                     FROM users
                     JOIN roles ON roles.id = role_id
                     WHERE users.id=@id;";
@@ -104,6 +105,8 @@ namespace testNetMVC.Repositories
                                 Id = reader["id"] != DBNull.Value ? Int32.Parse(reader["id"].ToString()!) : null,
                                 Avatar = reader["avatar"] != DBNull.Value ? reader["avatar"].ToString() : null,
                                 Email = reader["email"].ToString(),
+                                FirstName = reader["first_name"].ToString(),
+                                LastName = reader["last_name"].ToString(),
                                 Password = reader["password"].ToString(),
                                 Role_id = Convert.ToInt32(reader["role_id"]),
                                 Role = new Role
@@ -136,7 +139,7 @@ namespace testNetMVC.Repositories
                 using (MySqlConnection connection = new MySqlConnection(_connecString))
                 {
                     string sql = @"
-                    SELECT users.id id, email, password, avatar, role_id, label
+                    SELECT users.id id, email, password, avatar, role_id, label, first_name, last_name
                     FROM users
                     JOIN roles ON roles.id = role_id;";
                     using (MySqlCommand command = new MySqlCommand(sql, connection))
@@ -151,6 +154,8 @@ namespace testNetMVC.Repositories
                                 Id = reader["id"] != DBNull.Value ? Int32.Parse(reader["id"].ToString()!) : null,
                                 Avatar = reader["avatar"] != DBNull.Value ? reader["avatar"].ToString() : null,
                                 Email = reader["email"].ToString(),
+                                FirstName = reader["first_name"].ToString(),
+                                LastName = reader["last_name"].ToString(),
                                 Password = reader["password"].ToString(),
                                 Role_id = Convert.ToInt32(reader["role_id"]),
                                 Role = new Role
@@ -227,8 +232,8 @@ namespace testNetMVC.Repositories
                 {
 
                     string sql = @"
-                    INSERT INTO users(email, password, avatar, role_id)
-                    VALUES (@email, @password, @avatar, @role_id);
+                    INSERT INTO users(email, password, avatar, role_id, first_name, last_name)
+                    VALUES (@email, @password, @avatar, @role_id, @first_name, @last_name);
                     SELECT LAST_INSERT_ID()";
                     Console.WriteLine(sql);
                     using (MySqlCommand command = new MySqlCommand(sql, connection))
@@ -238,6 +243,8 @@ namespace testNetMVC.Repositories
                         command.Parameters.AddWithValue("@password", user.Password);
                         command.Parameters.AddWithValue("@avatar", user.Avatar);
                         command.Parameters.AddWithValue("@role_id", user.Role_id);
+                        command.Parameters.AddWithValue("@first_name", user.FirstName);
+                        command.Parameters.AddWithValue("@last_name", user.LastName);
                         connection.Open();
                         id = Convert.ToInt32(command.ExecuteScalar());
                         connection.Close();
@@ -280,7 +287,7 @@ namespace testNetMVC.Repositories
         }
 
 
-        public int update(UpdateUserBody user)
+        public int update(UserBody user)
         {
             int result = -1;
             Console.WriteLine("---Updating user");
@@ -290,7 +297,41 @@ namespace testNetMVC.Repositories
                 {
                     string sql = @"
                     UPDATE users
-                    SET password=@password, avatar=@avatar
+                    SET password=@password, first_name=@first_name, last_name=@last_name, role_id=@role_id
+                    WHERE id=@id;";
+                    using (MySqlCommand command = new MySqlCommand(sql, connection))
+                    {
+                        command.CommandType = System.Data.CommandType.Text;
+                        command.Parameters.AddWithValue("@password", user.Password);
+                        command.Parameters.AddWithValue("@id", user.Id);
+                        command.Parameters.AddWithValue("@first_name", user.FirstName);
+                        command.Parameters.AddWithValue("@last_name", user.LastName);
+                        command.Parameters.AddWithValue("@role_id", user.Role_id);
+                        connection.Open();
+                        result = Convert.ToInt32(command.ExecuteNonQuery());
+                        connection.Close();
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("Error updating user" + ex);
+            }
+
+            return result;
+        }
+
+        public int updateProfile(UserBody user)
+        {
+            int result = -1;
+            Console.WriteLine("---Updating user");
+            try
+            {
+                using (MySqlConnection connection = new MySqlConnection(_connecString))
+                {
+                    string sql = @"
+                    UPDATE users
+                    SET password=@password, avatar=@avatar, first_name=@first_name, last_name=@last_name
                     WHERE id=@id;";
                     using (MySqlCommand command = new MySqlCommand(sql, connection))
                     {
@@ -298,6 +339,8 @@ namespace testNetMVC.Repositories
                         command.Parameters.AddWithValue("@password", user.NewPassword);
                         command.Parameters.AddWithValue("@avatar", user.AvatarUrl != null ? user.AvatarUrl : DBNull.Value);
                         command.Parameters.AddWithValue("@id", user.Id);
+                        command.Parameters.AddWithValue("@first_name", user.FirstName);
+                        command.Parameters.AddWithValue("@last_name", user.LastName);
                         connection.Open();
                         result = Convert.ToInt32(command.ExecuteNonQuery());
                         connection.Close();

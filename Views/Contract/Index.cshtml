@@ -43,16 +43,20 @@
                                     <div class="action-buttons list-actions-column">
                                         <button class="button list-action-button details-bg" onclick="showcontractDetail('@contract.Id')">
                                             <span class="tooltip hidden">Ver detalles</span>
-                                            <img class="btn-img" src="~/images/details.png" alt="ver detalles de propietario">
+                                            <img class="btn-img" src="~/images/details.png" alt="ver detalles de contrato">
                                         </button>
                                         <button class="button list-action-button edit-bg" onclick="updateForm('@contract.Id')">
                                             <span class="tooltip hidden">Editar</span>
-                                            <img class="btn-img" src="~/images/edit.png" alt="editar propietario">
+                                            <img class="btn-img" src="~/images/edit.png" alt="editar contrato">
+                                        </button>
+                                        <button class="button list-action-button edit-bg" onclick="renewForm('@contract.Id')">
+                                            <span class="tooltip hidden">Renovar</span>
+                                            <img class="btn-img" src="~/images/renew.png" alt="actualizar contrato">
                                         </button>
                                         @if(Context.User.IsInRole("admin")){
                                             <button class="button list-action-button danger-bg" onclick="confirmDelete('@contract.Id')">
                                                 <span class="tooltip hidden">Eliminar</span>
-                                                <img class="btn-img" src="~/images/delete.png" alt="eliminar propietario">
+                                                <img class="btn-img" src="~/images/delete.png" alt="eliminar contrato">
                                             </button>
                                         }
                                     </div>
@@ -427,6 +431,8 @@
                 document.querySelector(".error-toast").classList.add("hidden");
                 contract_body_data = default_body;
                 document.querySelector("#create-contract-button")?.removeEventListener("click",()=>{sendCreateReq()});
+                document.querySelector("#property-input").removeAttribute('disabled');
+                document.querySelector("#renter-input").removeAttribute('disabled');
             }
 
             function showActions(){
@@ -486,6 +492,37 @@
                 document.querySelector("#create-contract-button").addEventListener("click", ()=>{sendCreateReq()});
                 document.querySelector(".spinner").classList.add("hidden");
                 document.querySelector(".form").classList.remove("hidden");
+            }
+            
+            function renewForm(id){
+                showActions();
+                fetch(`https://localhost:7164/contract/${parseInt(id)}`, {
+                    headers:{
+                        "RequestVerificationToken": "@token"
+                    }
+                }).then(res=>res.json()).then(data=>{
+                    setCurrentcontractData(data)
+                    contract_body_data = {
+                        fee: data.fee,
+                        from: data.until.split("T")[0],
+                        until: data.until.split("T")[0],
+                        property_id: data.property_id,
+                        renter_id: data.renter_id
+                    }
+                    document.querySelector(".spinner").classList.add("hidden");
+                    document.querySelector(".form").classList.remove("hidden");
+                    document.querySelector("#property-input").setAttribute('disabled', true);
+                    document.querySelector("#renter-input").setAttribute('disabled', true);
+                    document.querySelector("#from-input").setAttribute('min', data.until.split("T")[0]);
+                    document.querySelector("#from-input").value=data.until.split("T")[0];
+                    document.querySelector("#until-input").value=data.until.split("T")[0];
+                    document.querySelector("#until-input").setAttribute('min', data.until.split("T")[0]);
+                    document.querySelector(".form-title").innerHTML = "Renovar contrato";
+                    document.querySelector("#create-contract-button").innerHTML = "Renovar";
+                    document.querySelector("#create-contract-button").addEventListener("click", ()=>{sendCreateReq()});
+                }).catch(e=>{
+                    console.error(e);
+                })
             }
 
             function updateForm(contract_id){
@@ -616,7 +653,7 @@
                         },
                         body: JSON.stringify(contract_body_data),
                     }).then(res=>{
-                        if(res.status != 200)
+                        if(res.status != 200 && res.status != 201)
                             showError("Error", "No se pudo crear el contrato, intenta nuevamente.", ()=>{
                                 document.querySelector(".form").classList.remove("hidden");
                             });

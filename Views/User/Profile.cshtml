@@ -4,8 +4,6 @@
 @{
     ViewData["Title"] = "Mi perfil";
     var token = antiforgery.GetAndStoreTokens(Context).RequestToken;
-    var defaultProfilePath = (string)ViewBag.defaultProfilePath;
-    @* var types = @Html.Raw(Json.Serialize(ViewBag.types)); *@
 }
 
 <section class="section">
@@ -29,6 +27,16 @@
         <div>
             <label class="email-label">Email asociado</label>
             <input disabled type="text" class="disabled" value=@Model.Email>
+        </div>
+        <div>
+            <label>Nombre</label>
+            <input id="firstName" disabled type="text" name="firstName" value=@Model.FirstName>
+            <span></span>
+        </div>
+        <div>
+            <label>Apellido</label>
+            <input id="lastName" disabled type="tezt" name="lastName" value=@Model.LastName>
+            <span></span>
         </div>
         <div class="password-edit hidden">
             <div>
@@ -66,6 +74,8 @@
         confirmNewPassword: null,
         avatar: null,
         avatarUrl: '@Model.Avatar'.length > 0 ? '@Model.Avatar' : null,
+        firstName: '@Model.FirstName',
+        lastName: '@Model.LastName',
     }
 
     let userBody = {...defaultUserBody};
@@ -75,10 +85,7 @@
     }
 
     function handleChange(e){
-        console.log(e);
         userBody[e.target.name] = e.target.value;
-
-        console.log(userBody);
         checkInputs();
     }
 
@@ -92,7 +99,9 @@
         }
 
         toggleBtn(
-            userBody.avatar != null 
+            userBody.avatar != null
+            || userBody.firstName != null
+            || userBody.lastName != null
             || (userBody.avatarUrl != null && userBody.avatarUrl.length == 0)
         )
     }
@@ -121,6 +130,8 @@
     function clearForm(){
         document.querySelector("#password-input").value='';
         document.querySelector("#email-input").value='';
+        document.querySelector("#firstName").value='';
+        document.querySelector("#lastName").value='';
         document.querySelector("#role-input").value=null;
         document.querySelector(".error-toast").classList.add("hidden");
         userBody = {...defaultUserBody};
@@ -212,6 +223,8 @@
         document.querySelector(".password-edit").classList.remove("hidden");
 
         document.querySelector("#avatar-input").removeAttribute('disabled');
+        document.querySelector("#firstName").removeAttribute('disabled');
+        document.querySelector("#lastName").removeAttribute('disabled');
         document.querySelector("#current-pass").removeAttribute('disabled');
         document.querySelector("#new-pass").removeAttribute('disabled');
         document.querySelector("#repeat-new-pass").removeAttribute('disabled');
